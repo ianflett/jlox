@@ -1,0 +1,38 @@
+task getManifest(dependsOn: getDetails) {
+	doFirst {
+		jar.archiveBaseName = details.getName()
+
+		def metaDir = layout.buildDirectory.dir('resources/main/META-INF').get()
+		if (!metaDir.asFile.exists()) metaDir.asFile.mkdirs()
+
+		def buildInfoFile = metaDir.file('build-info.properties').asFile
+		details.toProperties().store(buildInfoFile.newWriter(), null)
+	}
+}
+
+jar {
+	dependsOn getManifest
+
+	doFirst {
+		manifest.attributes(
+			"Specification-Title":    details.getName(),
+			"Specification-Version":  details.getVersion(),
+			"Specification-Vendor":   details.getCompany(),
+			"Implementation-Title":   details.getName(),
+			"Implementation-Version": details.getVersion(),
+			"Implementation-Vendor":  details.getCompany())
+
+		def classpath = !configurations.hasProperty('runtime') ? ''
+            : configurations.runtime.collect { it.getName() }.join(' ')
+		if (!classpath.empty) manifest.attributes('Class-Path': classpath)
+
+		if (hasProperty('application') && application.mainClass.orNull) {
+			manifest.attributes('Main-Class': application.mainClass)
+		}
+	}
+
+	from(layout.buildDirectory) {
+		include 'build-info.properties'
+		into('META-INF/')
+	}
+}

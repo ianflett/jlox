@@ -1,0 +1,58 @@
+import com.diffplug.spotless.LineEnding
+
+plugins {
+    id 'com.diffplug.spotless' version '6.21.0'
+    id 'idea'
+    id 'jacoco'
+    id 'java'
+}
+
+group = 'ianflett.jlox'
+version = '0.0.0.0'
+
+apply from: "$rootDir/gradle/details.gradle"
+apply from: "$rootDir/gradle/manifest.gradle"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+// https://medium.com/@anirudhramesh95/enforcing-formatting-standards-for-your-java-project-using-gradle-2c21172743e5
+spotless {
+    ratchetFrom 'origin/main'
+
+    format 'misc', {
+        target '.gitattributes', '.gitignore', '*.gradle', '*.md'
+        endWithNewline()
+        indentWithSpaces(4)
+        setEncoding('utf-8')
+        setLineEndings(LineEnding.UNIX)
+    }
+
+    format 'trimmed', {
+        target '.gitattributes', '.gitignore', '*.gradle'
+        trimTrailingWhitespace()
+    }
+
+    java {
+        importOrder()
+        removeUnusedImports()
+        googleJavaFormat('1.17.0').aosp().reflowLongStrings()
+        formatAnnotations()
+    }
+}

@@ -1,0 +1,86 @@
+import static org.gradle.internal.jvm.Jvm.current
+
+apply from: "$rootDir/gradle/version.gradle"
+
+task getDetails(dependsOn: compileJava) {
+	doFirst { project.ext.set 'details', new Details(project, 'Ian Flett') }
+}
+
+class Details {
+	private Project  project
+	private String   company
+	private String   name
+	private Calendar time
+
+	Details(Project project, String company) {
+		time = Calendar.getInstance()
+		this.project = project
+		this.company = company
+	}
+
+	String getName() {
+		if (!name) {
+			def p = project
+			def names = []
+			while (p != null) {
+				names += ["${p.name}"]
+				p = p.parent
+			}
+			name = (names as List).reverse().join('.')
+		}
+		name
+	}
+
+	String getCompany() { company }
+
+	String getCopyright() { "Copyright \u00A9 ${time.get(Calendar.YEAR)} $company" }
+
+	String getBuildTime() { time.format('yyyy-MM-dd\'T\'HH:mm:ss.SSSZ') }
+
+	String getBuildTimestamp() { Long.toString(time.timeInMillis) }
+
+	String getVersion() { project.version }
+
+	String getPackage() { project.group }
+
+	static String getUser() { System.getProperty("user.name") }
+
+	static String getHost() { InetAddress.getLocalHost().getHostName() }
+
+	Map getEnvironment() {
+		def agents = [
+			'os'     : System.properties['os.name'],
+			'java'   : current().javaVersion,
+			'groovy' : GroovySystem.getVersion(),
+			'gradle' : project.gradle.gradleVersion
+		]
+		agents
+	}
+
+	String[] getDependencies() {
+        String[] files = []
+        if (project.configurations.hasProperty('runtime')) {
+            project.configurations.runtime.files.each {
+                File f -> files += f.name
+            }
+            files.sort()
+        }
+        files
+	}
+
+	Properties toProperties() {
+		Properties p = new Properties()
+		p.setProperty('build.name',         getName())
+		p.setProperty('build.version',      getVersion())
+		p.setProperty('build.company',      getCompany())
+		p.setProperty('build.copyright',    getCopyright())
+		p.setProperty('build.time',         getBuildTime())
+		p.setProperty('build.timestamp',    getBuildTimestamp())
+		p.setProperty('build.package',      getPackage())
+		p.setProperty('build.user',         getUser())
+		p.setProperty('build.host',         getHost())
+		p.setProperty('build.environment',  getEnvironment().toString())
+		p.setProperty('build.dependencies', getDependencies().toString())
+		p
+	}
+}
