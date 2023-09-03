@@ -8,7 +8,10 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 /** Defines the Lox language interpreter. */
-public class Lox {
+public final class Lox {
+
+    /** Represents a single command line argument. */
+    private static final int SINGLE_ARG = 1;
 
     /** Stores whether an error has been encountered during processing. */
     private static boolean hadError = false;
@@ -23,12 +26,12 @@ public class Lox {
      */
     public static void main(String[] args) throws IOException {
 
-        if (1 < args.length) {
+        if (SINGLE_ARG < args.length) {
             System.out.println("Usage: jlox [script]");
-            System.exit(64);
+            exit(PosixExits.USAGE);
         }
 
-        if (1 == args.length) {
+        if (SINGLE_ARG == args.length) {
             runFile(args[0]);
         } else {
             runPrompt();
@@ -47,7 +50,7 @@ public class Lox {
         run(new String(bytes, Charset.defaultCharset()));
 
         // Indicate error and exit.
-        if (hadError) System.exit(65);
+        if (hadError) exit(PosixExits.DATAERR);
     }
 
     /**
@@ -106,5 +109,14 @@ public class Lox {
     private static void report(int line, String where, String message) {
         System.err.println("[line " + line + "] Error " + where + ": " + message);
         hadError = true;
+    }
+
+    /**
+     * Standardised way of exiting with a POSIX exit code.
+     *
+     * @param exitType The exit code to use.
+     */
+    private static void exit(PosixExits exitType) {
+        System.exit(exitType.getCode());
     }
 }
