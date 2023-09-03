@@ -1,14 +1,18 @@
 import com.diffplug.spotless.LineEnding
 
 plugins {
+    id 'application'
     id 'com.diffplug.spotless' version '6.25.0'
     id 'idea'
     id 'jacoco'
-    id 'java'
 }
 
 group = 'ianflett.jlox'
-version = '0.0.0.0'
+version = '0.4.1.0'
+
+application {
+    mainClass = "${group}.Lox"
+}
 
 apply from: "$rootDir/gradle/details.gradle"
 apply from: "$rootDir/gradle/manifest.gradle"
