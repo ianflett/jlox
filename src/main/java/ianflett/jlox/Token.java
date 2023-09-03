@@ -24,6 +24,10 @@ class Token {
      * @param line The line number location.
      */
     Token(TokenType type, String lexeme, Object literal, int line) {
+
+        if (null == lexeme) throw new IllegalArgumentException("Lexeme must not be null");
+        if (0 > line) throw new IllegalArgumentException("Line number must not be negative");
+
         this.type = type;
         this.lexeme = lexeme;
         this.literal = literal;
