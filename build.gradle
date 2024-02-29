@@ -1,7 +1,7 @@
 import com.diffplug.spotless.LineEnding
 
 plugins {
-    id 'com.diffplug.spotless' version '6.21.0'
+    id 'com.diffplug.spotless' version '6.25.0'
     id 'idea'
     id 'jacoco'
     id 'java'
@@ -18,13 +18,13 @@ repositories {
 }
 
 dependencies {
-    testImplementation platform('org.junit:junit-bom:5.9.1')
+    testImplementation platform('org.junit:junit-bom:5.10.2')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(17)
+        languageVersion = JavaLanguageVersion.of(21)
     }
 }
 
@@ -52,7 +52,7 @@ spotless {
     java {
         importOrder()
         removeUnusedImports()
-        googleJavaFormat('1.17.0').aosp().reflowLongStrings()
+        googleJavaFormat('1.20.0').aosp().reflowLongStrings()
         formatAnnotations()
     }
 }
