@@ -3,6 +3,7 @@ plugins {
     id 'com.diffplug.spotless' version '6.25.0'
     id 'idea'
     id 'jacoco'
+    id 'jvm-test-suite'
 }
 
 group = 'ianflett.jlox'
@@ -31,8 +32,12 @@ java {
     }
 }
 
-test {
-    useJUnitPlatform()
+testing {
+    suites {
+        test {
+            useJUnitJupiter()
+        }
+    }
 }
 
 // https://medium.com/@anirudhramesh95/enforcing-formatting-standards-for-your-java-project-using-gradle-2c21172743e5
