@@ -40,7 +40,8 @@ class TokenTests {
     }
 
     /**
-     * Tests {@link Token#toString()} outputs the expected field data from the {@link Token} object.
+     * Tests {@link Token#toString()} outputs the token type, lexeme, and literal from the {@link
+     * Token} object.
      *
      * @param tokenType The {@link Token}'s type.
      * @param lexeme The raw {@link Token} text.
@@ -48,19 +49,21 @@ class TokenTests {
      * @param line The line number location.
      */
     @ParameterizedTest(name = "new Token({0}, \"{1}\", {2}, {3}).toString() = \"{0} {1} {2}\"")
-    @MethodSource("toString_data")
-    void toString(TokenType tokenType, String lexeme, Object literal, int line) {
+    @MethodSource("toString_reportsTokenTypeLexemeAndLiteral_data")
+    void toString_reportsTokenTypeLexemeAndLiteral(
+            TokenType tokenType, String lexeme, Object literal, int line) {
         assertThat(
                 new Token(tokenType, lexeme, literal, line).toString(),
                 is(equalTo(tokenType + " " + lexeme + " " + literal)));
     }
 
     /**
-     * Data source for the {@link #toString(TokenType, String, Object, int)} tests.
+     * Data source for {@link #toString_reportsTokenTypeLexemeAndLiteral(TokenType, String, Object,
+     * int)} tests.
      *
      * @return Test argument data.
      */
-    static Stream<Arguments> toString_data() {
+    static Stream<Arguments> toString_reportsTokenTypeLexemeAndLiteral_data() {
         return Stream.of(
                 arguments(TokenType.LEFT_PAREN, "", null, 0),
                 arguments(TokenType.RIGHT_PAREN, "", null, 0),
