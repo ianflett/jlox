@@ -59,6 +59,72 @@ class Scanner {
         return source.length() <= current;
     }
 
-    /** Temporary placeholder to enable compilation. */
-    void scanToken() {}
+    /** Scans a token in the source text. */
+    private void scanToken() {
+        char c = advance();
+        switch (c) {
+            case '(':
+                addToken(LEFT_PAREN);
+                break;
+            case ')':
+                addToken(RIGHT_PAREN);
+                break;
+            case '{':
+                addToken(LEFT_BRACE);
+                break;
+            case '}':
+                addToken(RIGHT_BRACE);
+                break;
+            case ',':
+                addToken(COMMA);
+                break;
+            case '.':
+                addToken(DOT);
+                break;
+            case '-':
+                addToken(MINUS);
+                break;
+            case '+':
+                addToken(PLUS);
+                break;
+            case ';':
+                addToken(SEMICOLON);
+                break;
+            case '*':
+                addToken(STAR);
+                break;
+            default:
+                Lox.error(line, "Unexpected character.");
+                break;
+        }
+    }
+
+    /**
+     * Reads next character in source text.
+     *
+     * @return The character read.
+     */
+    private char advance() {
+        return source.charAt(current++);
+    }
+
+    /**
+     * Converts a character to a {@link Token}.
+     *
+     * @param type The {@link Token}'s {@link TokenType}.
+     */
+    private void addToken(TokenType type) {
+        addToken(type, null);
+    }
+
+    /**
+     * Converts a character to a {@link Token}.
+     *
+     * @param type The {@link Token}'s {@link TokenType}.
+     * @param literal The {@link Token}'s literal value.
+     */
+    private void addToken(TokenType type, Object literal) {
+        String text = source.substring(start, current);
+        tokens.add(new Token(type, text, literal, line));
+    }
 }
