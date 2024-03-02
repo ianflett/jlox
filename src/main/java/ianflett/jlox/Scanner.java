@@ -29,6 +29,8 @@ class Scanner {
      * @param source The source text to scan.
      */
     Scanner(String source) {
+
+        if (null == source) throw new IllegalArgumentException("Source text must be defined.");
         this.source = source;
     }
 

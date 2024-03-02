@@ -1,6 +1,8 @@
 package ianflett.jlox;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -18,8 +20,11 @@ class TokenTests {
      * IllegalArgumentException} if {@code lexeme} is {@code null}.
      */
     @Test
-    void Constructor_ThrowsIllegalArgumentException_WhenLexemeIsNull() {
-        assertThrows(IllegalArgumentException.class, () -> new Token(TokenType.EOF, null, null, 0));
+    void constructor_throwsIllegalArgumentException_whenLexemeIsNull() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Token(TokenType.EOF, null, null, 0),
+                "Lexeme must not be null");
     }
 
     /**
@@ -27,8 +32,11 @@ class TokenTests {
      * IllegalArgumentException} if {@code line} is negative.
      */
     @Test
-    void Constructor_ThrowsIllegalArgumentException_WhenLineIsNegative() {
-        assertThrows(IllegalArgumentException.class, () -> new Token(TokenType.EOF, "", null, -1));
+    void constructor_throwsIllegalArgumentException_whenLineIsNegative() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Token(TokenType.EOF, "", null, -1),
+                "Line number must not be negative");
     }
 
     /**
@@ -42,9 +50,9 @@ class TokenTests {
     @ParameterizedTest(name = "new Token({0}, \"{1}\", {2}, {3}).toString() = \"{0} {1} {2}\"")
     @MethodSource("toString_data")
     void toString(TokenType tokenType, String lexeme, Object literal, int line) {
-        assertEquals(
-                tokenType + " " + lexeme + " " + literal,
-                new Token(tokenType, lexeme, literal, line).toString());
+        assertThat(
+                new Token(tokenType, lexeme, literal, line).toString(),
+                is(equalTo(tokenType + " " + lexeme + " " + literal)));
     }
 
     /**
