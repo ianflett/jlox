@@ -7,21 +7,21 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-/** Defines the Lox language interpreter. */
+/** Defines Lox language interpreter. */
 public final class Lox {
 
-    /** Represents a single command line argument. */
+    /** Represents single command line argument. */
     private static final int SINGLE_ARG = 1;
 
-    /** Stores whether an error has been encountered during processing. */
+    /** Stores whether error encountered during processing. */
     private static boolean hadError = false;
 
     /**
-     * The main entry point for the interpreter.
+     * Main entry point for interpreter.
      *
-     * @param args The command line parameters. Supplying no arguments will start a REPL; supplying
-     *     one argument, a file path, will process that file; any more arguments are invalid and
-     *     will present usage instructions.
+     * @param args Command line parameters. Supplying no arguments will start REPL; supplying one
+     *     argument, file path, will process file; more arguments are invalid and will present usage
+     *     instructions.
      * @throws IOException Thrown if input cannot be read.
      */
     public static void main(String[] args) throws IOException {
@@ -39,10 +39,10 @@ public final class Lox {
     }
 
     /**
-     * Runs Lox commands from a file input.
+     * Runs Lox commands from file input.
      *
-     * @param path The path to the Lox file.
-     * @throws IOException Thrown if the file cannot be read.
+     * @param path Path to Lox file.
+     * @throws IOException Thrown if file cannot be read.
      */
     private static void runFile(String path) throws IOException {
 
@@ -56,7 +56,7 @@ public final class Lox {
     /**
      * Runs Lox commands from user input.
      *
-     * @throws IOException Thrown if the system input stream cannot be read.
+     * @throws IOException Thrown if system input stream cannot be read.
      */
     private static void runPrompt() throws IOException {
 
@@ -90,7 +90,7 @@ public final class Lox {
     }
 
     /**
-     * Reports a processing error.
+     * Reports processing error.
      *
      * @param line Affected line number.
      * @param message Description of error.
@@ -100,7 +100,7 @@ public final class Lox {
     }
 
     /**
-     * Reports a message to the standard error stream.
+     * Reports message to standard error stream.
      *
      * @param line Affected line number.
      * @param where Location of error.
@@ -112,9 +112,9 @@ public final class Lox {
     }
 
     /**
-     * Standardised way of exiting with a POSIX exit code.
+     * Standardised way of exiting with POSIX exit code.
      *
-     * @param exitType The exit code to use.
+     * @param exitType Exit code to use.
      */
     private static void exit(PosixExits exitType) {
         System.exit(exitType.getCode());

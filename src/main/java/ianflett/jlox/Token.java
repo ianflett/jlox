@@ -1,22 +1,22 @@
 package ianflett.jlox;
 
 /**
- * Represents a {@link Token} (keyword, operator, punctuation, literal) in the Lox language.
+ * Represents {@link Token} (keyword, operator, punctuation, literal) in Lox language.
  *
- * @param type Stores the {@link Token}'s type.
- * @param lexeme Stores the raw {@link Token} text.
- * @param literal Stores the converted {@link Token} value.
- * @param line Stores the line number location.
+ * @param type Stores {@link Token}'s type.
+ * @param lexeme Stores raw {@link Token} text.
+ * @param literal Stores converted {@link Token} value.
+ * @param line Stores line number location.
  */
 record Token(TokenType type, String lexeme, Object literal, int line) {
 
     /**
-     * Constructs a {@link Token}.
+     * Constructs {@link Token}.
      *
-     * @param type The {@link Token}'s type.
-     * @param lexeme The raw {@link Token} text.
-     * @param literal The converted {@link Token} value.
-     * @param line The line number location.
+     * @param type {@link Token}'s type.
+     * @param lexeme Raw {@link Token} text.
+     * @param literal Converted {@link Token} value.
+     * @param line Line number location.
      */
     Token {
         if (null == lexeme) throw new IllegalArgumentException("Lexeme must not be null");
@@ -24,9 +24,9 @@ record Token(TokenType type, String lexeme, Object literal, int line) {
     }
 
     /**
-     * Represents the token's type, lexeme, and literal as a string.
+     * Represents token's type, lexeme, and literal as {@code String}.
      *
-     * @return A string representation of the object.
+     * @return {@link String} representation of object.
      */
     public String toString() {
         return type + " " + lexeme + " " + literal;

@@ -8,50 +8,48 @@ package ianflett.jlox;
  */
 public enum PosixExits {
 
-    /** The program executed successfully. */
+    /** Program executed successfully. */
     OK(0),
 
     /**
-     * The command was used incorrectly, e.g., with the wrong number of arguments, a bad flag, a bad
-     * syntax in a parameter, or whatever.
+     * Command used incorrectly, e.g., wrong number of arguments, bad flag, bad syntax in parameter,
+     * or whatever.
      */
     USAGE(64),
 
     /**
-     * The input data was incorrect in some way. This should only be used for user's data and not
-     * system files.
+     * Input data incorrect in some way. Should only be used for user's data and not system files.
      */
     DATAERR(65),
 
     /**
-     * An input file (not a system file) did not exist or was not readable. This could also include
-     * errors like "No message" to a mailer (if it cared to catch it).
+     * Input file (not system file) did not exist or not readable. Could also include errors like
+     * "No message" to mailer (if it cared to catch it).
      */
     NOINPUT(66),
 
-    /** The user specified did not exist. This might be used for mail addresses or remote logins. */
+    /** User specified did not exist. Might be used for mail addresses or remote logins. */
     NOUSER(67),
 
-    /** The host specified did not exist. This is used in mail addresses or network requests. */
+    /** Host specified did not exist. Used in mail addresses or network requests. */
     NOHOST(68),
 
     /**
-     * A service is unavailable. This can occur if a support program or file does not exist. This
-     * can also be used as a catchall message when something you wanted to do doesn't work, but you
-     * don't know why.
+     * Service unavailable. Can occur if support program or file does not exist. Can also be used as
+     * catchall message when something you wanted to do doesn't work, but you don't know why.
      */
     UNAVAILABLE(69),
 
     /**
-     * An internal software error has been detected. This should be limited to non-operating system
-     * related errors as possible.
+     * Internal software error detected. Should be limited to non-operating system related errors as
+     * possible.
      */
     SOFTWARE(70),
 
     /**
-     * An operating system error has been detected. This is intended to be used for such things as
-     * "cannot fork", "cannot create pipe", or the like. It includes things like getuid returning a
-     * user that does not exist in the passwd file.
+     * Operating system error detected. Intended to be used for such things as "cannot fork",
+     * "cannot create pipe", or similar. Includes things like getuid returning user that does not
+     * exist in passwd file.
      */
     OSERR(71),
 
@@ -61,48 +59,46 @@ public enum PosixExits {
      */
     OSFILE(72),
 
-    /** A (user specified) output file cannot be created. */
+    /** (User specified) output file cannot be created. */
     CANTCREAT(73),
 
-    /** An error occurred while doing I/O on some file. */
+    /** Error occurred while doing I/O on some file. */
     IOERR(74),
 
     /**
      * Temporary failure, indicating something that is not really an error. In sendmail, this means
-     * that a mailer (e.g.) could not create a connection, and the request should be reattempted
-     * later.
+     * mailer (e.g.) could not create connection, and request should be reattempted later.
      */
     TEMPFAIL(75),
 
-    /** The remote system returned something that was "not possible" during a protocol exchange. */
+    /** Remote system returned something "not possible" during a protocol exchange. */
     PROTOCOL(76),
 
     /**
-     * You did not have sufficient permission to perform the operation. This is not intended for
-     * file system problems, which should use {@link #NOINPUT} or {@link #CANTCREAT}, but rather for
-     * higher level permissions.
+     * Insufficient permission to perform operation. Not intended for file system problems, which
+     * should use {@link #NOINPUT} or {@link #CANTCREAT}, but rather for higher level permissions.
      */
     NOPERM(77),
 
-    /** Something was found in an unconfigured or misconfigured state. */
+    /** Something found in unconfigured or misconfigured state. */
     CONFIG(78);
 
-    /** Stores the associated exit code. */
+    /** Stores associated exit code. */
     private final int code;
 
     /**
-     * Defines a POSIX system exit code.
+     * Defines POSIX system exit code.
      *
-     * @param code The associated exit code.
+     * @param code Associated exit code.
      */
     PosixExits(int code) {
         this.code = code;
     }
 
     /**
-     * Gets the associated exit code.
+     * Gets associated exit code.
      *
-     * @return The exit code.
+     * @return Exit code.
      */
     public int getCode() {
         return code;

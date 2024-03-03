@@ -15,11 +15,11 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
-/** Unit tests the {@link Scanner} class. */
+/** Unit tests {@link Scanner} class. */
 public class ScannerTests {
 
     /**
-     * Tests {@link Scanner#Scanner(String)} throws an {@link IllegalArgumentException} if {@code
+     * Tests {@link Scanner#Scanner(String)} throws {@link IllegalArgumentException} if {@code
      * source} is {@code null}.
      */
     @Test
@@ -31,19 +31,18 @@ public class ScannerTests {
     }
 
     /**
-     * Tests {@link Scanner#scanTokens()} emits a {@link TokenType#EOF} {@link Token} if {@code
-     * source} is an empty {@link String}.
+     * Tests {@link Scanner#scanTokens()} emits {@link TokenType#EOF} {@link Token} if {@code
+     * source} is empty {@link String}.
      */
     @Test
     void scanTokens_emitsEof_whenSourceIsEmpty() {
-        assertThat(new Scanner("").scanTokens(), hasItem(EOF_TOKEN));
+        assertThat(new Scanner("").scanTokens(), contains(EOF_TOKEN));
     }
 
     /**
-     * Tests {@link Scanner#scanTokens()} emits an error if {@code source} contains an invalid
-     * character.
+     * Tests {@link Scanner#scanTokens()} emits error if {@code source} contains invalid character.
      *
-     * @throws Exception Reading from standard error threw an exception.
+     * @throws Exception Reading from standard error threw exception.
      */
     @ParameterizedTest
     @ValueSource(strings = {"@", "#"})
@@ -53,7 +52,7 @@ public class ScannerTests {
     }
 
     /**
-     * Tests {@link Scanner#scanTokens()} emits correct token if {@code source} contains a valid
+     * Tests {@link Scanner#scanTokens()} emits correct token if {@code source} contains valid
      * character sequence.
      */
     @ParameterizedTest(name = "\"{0}\" = <{1}>")
@@ -89,9 +88,36 @@ public class ScannerTests {
                         entry("<", TokenType.LESS),
                         entry("<=", TokenType.LESS_EQUAL),
                         entry(">", TokenType.GREATER),
-                        entry(">=", TokenType.GREATER_EQUAL))
+                        entry(">=", TokenType.GREATER_EQUAL),
+                        entry("/", TokenType.SLASH))
                 .stream()
                 .map(i -> arguments(i.getKey(), new Token(i.getValue(), i.getKey(), null, 1)));
+    }
+
+    /**
+     * Tests {@link Scanner#scanTokens()} emits no token if {@code source} contains comment or
+     * whitespace character.
+     */
+    @ParameterizedTest(name = "\"{0}\"")
+    @ValueSource(strings = {"//", "// This is a comment.", " ", "\r", "\t"})
+    void scanTokens_emitsNothing_whenCommentOrWhitespace(String source) {
+        assertThat(new Scanner(source).scanTokens(), contains(EOF_TOKEN));
+    }
+
+    /**
+     * Tests {@link Scanner#scanTokens()} emits no token but advances line number if {@code source}
+     * contains new line character.
+     */
+    @Test
+    void scanTokens_emitsNothingAndAdvancesLine_whenNewLine() {
+        assertThat(
+                new Scanner("\n").scanTokens(),
+                contains(
+                        new Token(
+                                EOF_TOKEN.type(),
+                                EOF_TOKEN.lexeme(),
+                                EOF_TOKEN.literal(),
+                                EOF_TOKEN.line() + 1)));
     }
 
     /** End of file token. */

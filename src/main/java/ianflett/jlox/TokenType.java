@@ -1,6 +1,6 @@
 package ianflett.jlox;
 
-/** Defines all tokens for the Lox language. */
+/** Defines all tokens for Lox language. */
 enum TokenType {
     // Single-character tokens.
     LEFT_PAREN,

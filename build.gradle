@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'ianflett.jlox'
-version = '0.4.5.2'
+version = '0.4.5.3'
 
 application {
     mainClass = "${group}.Lox"

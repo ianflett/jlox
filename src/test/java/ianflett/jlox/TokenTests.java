@@ -12,7 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-/** Unit tests the {@link Token} class. */
+/** Unit tests {@link Token} class. */
 class TokenTests {
 
     /**
@@ -40,13 +40,13 @@ class TokenTests {
     }
 
     /**
-     * Tests {@link Token#toString()} outputs the token type, lexeme, and literal from the {@link
-     * Token} object.
+     * Tests {@link Token#toString()} outputs token type, lexeme, and literal from {@link Token}
+     * object.
      *
-     * @param tokenType The {@link Token}'s type.
-     * @param lexeme The raw {@link Token} text.
-     * @param literal The converted {@link Token} value.
-     * @param line The line number location.
+     * @param tokenType {@link Token}'s type.
+     * @param lexeme Raw {@link Token} text.
+     * @param literal Converted {@link Token} value.
+     * @param line Line number location.
      */
     @ParameterizedTest(name = "new Token({0}, \"{1}\", {2}, {3}).toString() = \"{0} {1} {2}\"")
     @MethodSource("toString_reportsTokenTypeLexemeAndLiteral_data")
