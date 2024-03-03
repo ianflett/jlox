@@ -120,6 +120,37 @@ public class ScannerTests {
                                 EOF_TOKEN.line() + 1)));
     }
 
+    /**
+     * Tests {@link Scanner#scanTokens()} emits string token if {@code source} contains text within
+     * quotes.
+     */
+    @ParameterizedTest(name = "\"{0}\"")
+    @MethodSource("scanTokens_emitsString_whenTextWithinQuotes_data")
+    void scanTokens_emitsString_whenTextWithinQuotes(String source, int line) {
+        assertThat(
+                new Scanner(source).scanTokens(),
+                contains(
+                        new Token(
+                                TokenType.STRING,
+                                source,
+                                source.substring(1, source.length() - 1),
+                                line),
+                        new Token(
+                                EOF_TOKEN.type(), EOF_TOKEN.lexeme(), EOF_TOKEN.literal(), line)));
+    }
+
+    /**
+     * Data source for {@link #scanTokens_emitsString_whenTextWithinQuotes(String, int)} tests.
+     *
+     * @return Test argument data.
+     */
+    static Stream<Arguments> scanTokens_emitsString_whenTextWithinQuotes_data() {
+        return Stream.of(
+                arguments("\"\"", 1),
+                arguments("\"This is a string.\"", 1),
+                arguments("\"This is a\nmultiline string.\"", 2));
+    }
+
     /** End of file token. */
     static final Token EOF_TOKEN = new Token(TokenType.EOF, "", null, 1);
 }

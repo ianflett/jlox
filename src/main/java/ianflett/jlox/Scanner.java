@@ -61,7 +61,7 @@ class Scanner {
 
     /** Scans token in source text. */
     private void scanToken() {
-        char c = advance();
+        var c = advance();
         switch (c) {
             case '(':
                 addToken(LEFT_PAREN);
@@ -120,10 +120,32 @@ class Scanner {
             case '\t':
                 // Ignore whitespace.
                 break;
+            case '"':
+                string();
+                break;
             default:
                 Lox.error(line, "Unexpected character.");
                 break;
         }
+    }
+
+    private void string() {
+        while (peek() != '"' && !isAtEnd()) {
+            if (peek() == '\n') ++line;
+            advance();
+        }
+
+        if (isAtEnd()) {
+            Lox.error(line, "Unterminated string.");
+            return;
+        }
+
+        // Closing ".
+        advance();
+
+        // Trim surrounding quotes.
+        var value = source.substring(start + 1, current - 1);
+        addToken(STRING, value);
     }
 
     /**
