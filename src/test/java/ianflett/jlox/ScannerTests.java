@@ -53,24 +53,24 @@ public class ScannerTests {
     }
 
     /**
-     * Tests {@link Scanner#scanTokens()} emits a unary token if {@code source} contains a valid
-     * unary character.
+     * Tests {@link Scanner#scanTokens()} emits correct token if {@code source} contains a valid
+     * character sequence.
      */
     @ParameterizedTest(name = "\"{0}\" = <{1}>")
-    @MethodSource("scanTokens_emitsUnaryToken_whenSourceContainsValidUnaryCharacter_data")
-    void scanTokens_emitsUnaryToken_whenSourceContainsValidUnaryCharacter(
+    @MethodSource("scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence_data")
+    void scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence(
             String source, Token token) {
         assertThat(new Scanner(source).scanTokens(), contains(token, EOF_TOKEN));
     }
 
     /**
      * Data source for {@link
-     * #scanTokens_emitsUnaryToken_whenSourceContainsValidUnaryCharacter(String, Token)} tests.
+     * #scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence(String, Token)} tests.
      *
      * @return Test argument data.
      */
     static Stream<Arguments>
-            scanTokens_emitsUnaryToken_whenSourceContainsValidUnaryCharacter_data() {
+            scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence_data() {
         return Set.of(
                         entry("(", TokenType.LEFT_PAREN),
                         entry(")", TokenType.RIGHT_PAREN),
@@ -81,11 +81,19 @@ public class ScannerTests {
                         entry("-", TokenType.MINUS),
                         entry("+", TokenType.PLUS),
                         entry(";", TokenType.SEMICOLON),
-                        entry("*", TokenType.STAR))
+                        entry("*", TokenType.STAR),
+                        entry("!", TokenType.BANG),
+                        entry("!=", TokenType.BANG_EQUAL),
+                        entry("=", TokenType.EQUAL),
+                        entry("==", TokenType.EQUAL_EQUAL),
+                        entry("<", TokenType.LESS),
+                        entry("<=", TokenType.LESS_EQUAL),
+                        entry(">", TokenType.GREATER),
+                        entry(">=", TokenType.GREATER_EQUAL))
                 .stream()
                 .map(i -> arguments(i.getKey(), new Token(i.getValue(), i.getKey(), null, 1)));
     }
 
-    /** The end of file token. */
+    /** End of file token. */
     static final Token EOF_TOKEN = new Token(TokenType.EOF, "", null, 1);
 }

@@ -93,6 +93,18 @@ class Scanner {
             case '*':
                 addToken(STAR);
                 break;
+            case '!':
+                addToken(match('=') ? BANG_EQUAL : BANG);
+                break;
+            case '=':
+                addToken(match('=') ? EQUAL_EQUAL : EQUAL);
+                break;
+            case '<':
+                addToken(match('=') ? LESS_EQUAL : LESS);
+                break;
+            case '>':
+                addToken(match('=') ? GREATER_EQUAL : GREATER);
+                break;
             default:
                 Lox.error(line, "Unexpected character.");
                 break;
@@ -100,12 +112,25 @@ class Scanner {
     }
 
     /**
-     * Reads next character in source text.
+     * Consume next character in source text.
      *
      * @return The character read.
      */
     private char advance() {
         return source.charAt(current++);
+    }
+
+    /**
+     * Consumes next character in source text, if character matches {@code expected}.
+     *
+     * @param expected The character to attempt to consume.
+     * @return {@code true} if expected character was consumed; {@code false} otherwise.
+     */
+    private boolean match(char expected) {
+        if (isAtEnd() || source.charAt(current) != expected) return false;
+
+        ++current;
+        return true;
     }
 
     /**
