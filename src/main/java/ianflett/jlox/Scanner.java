@@ -127,10 +127,7 @@ class Scanner {
                 addToken(match('=') ? GREATER_EQUAL : GREATER);
                 break;
             case '/':
-                if (match('/')) {
-                    // Comment persist to end of line.
-                    while (peek() != '\n' && !isAtEnd()) advance();
-                } else {
+                if (!comment()) {
                     addToken(SLASH);
                 }
                 break;
@@ -199,6 +196,31 @@ class Scanner {
         // Trim surrounding quotes.
         var value = source.substring(start + 1, current - 1);
         addToken(STRING, value);
+    }
+
+    /** Consumes comment {@link Token} from source text. */
+    private boolean comment() {
+
+        if (match('/')) {
+            // Comment persist to end of line.
+            while (peek() != '\n' && !isAtEnd()) advance();
+            return true;
+        }
+
+        if (match('*')) {
+            while ((peek() != '*' || peekNext() != '/') && !isAtEnd()) {
+                if (peek() == '\n') ++line;
+                advance();
+            }
+
+            // Closing */.
+            advance();
+            advance();
+
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -281,7 +303,7 @@ class Scanner {
     }
 
     /**
-     * Converts character to {@link Token}.
+     * Adds {@link Token} to discovered list.
      *
      * @param type {@link Token}'s {@link TokenType}.
      * @param literal {@link Token}'s literal value.

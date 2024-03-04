@@ -100,14 +100,58 @@ public class ScannerTests {
     }
 
     /**
-     * Tests {@link Scanner#scanTokens()} emits no {@link Token} if {@code source} contains comment
-     * or whitespace character.
+     * Tests {@link Scanner#scanTokens()} emits no {@link Token} if {@code source} contains single
+     * line comment.
      *
      * @param source Source text to analyse.
      */
     @ParameterizedTest(name = "\"{0}\"")
-    @ValueSource(strings = {"//", "// This is a comment.", " ", "\r", "\t"})
-    void scanTokens_emitsNothing_whenCommentOrWhitespace(String source) {
+    @ValueSource(
+            strings = {
+                "//",
+                "// This is a comment.",
+                "// This is a / comment.",
+                "// This is a // comment."
+            })
+    void scanTokens_emitsNothing_whenSingleComment(String source) {
+        assertThat(new Scanner(source).scanTokens(), contains(EOF_TOKEN));
+    }
+
+    /**
+     * Tests {@link Scanner#scanTokens()} emits no {@link Token} if {@code source} contains
+     * multiline comment.
+     *
+     * @param source Source text to analyse.
+     * @param line Expected line number.
+     */
+    @ParameterizedTest(name = "\"{0}\"")
+    @MethodSource("scanTokens_emitsNothing_whenMultiComment")
+    void scanTokens_emitsNothing_whenMultiComment(String source, int line) {
+        assertThat(
+                new Scanner(source).scanTokens(),
+                contains(
+                        new Token(
+                                EOF_TOKEN.type(), EOF_TOKEN.lexeme(), EOF_TOKEN.literal(), line)));
+    }
+
+    static Stream<Arguments> scanTokens_emitsNothing_whenMultiComment() {
+        return Stream.of(
+                arguments("/**/", 1),
+                arguments("/* This is a comment. */", 1),
+                arguments("/* This\nis\na\ncomment. */", 4),
+                arguments("/* This is a\n * comment. */", 2),
+                arguments("/* This is a /* comment. */", 1));
+    }
+
+    /**
+     * Tests {@link Scanner#scanTokens()} emits no {@link Token} if {@code source} contains
+     * whitespace character.
+     *
+     * @param source Source text to analyse.
+     */
+    @ParameterizedTest(name = "\"{0}\"")
+    @ValueSource(strings = {" ", "\r", "\t"})
+    void scanTokens_emitsNothing_whenWhitespace(String source) {
         assertThat(new Scanner(source).scanTokens(), contains(EOF_TOKEN));
     }
 
