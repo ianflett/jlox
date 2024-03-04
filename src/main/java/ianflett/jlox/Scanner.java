@@ -1,12 +1,34 @@
 package ianflett.jlox;
 
 import static ianflett.jlox.TokenType.*;
+import static java.util.Map.entry;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /** Scans through text to discover {@link Token}s. */
 class Scanner {
+
+    /** Defines all reserved keywords and associated token types. */
+    private static final Map<String, TokenType> keywords =
+            Map.ofEntries(
+                    entry("and", AND),
+                    entry("class", CLASS),
+                    entry("else", ELSE),
+                    entry("false", FALSE),
+                    entry("for", FOR),
+                    entry("fun", FUN),
+                    entry("if", IF),
+                    entry("nil", NIL),
+                    entry("or", OR),
+                    entry("print", PRINT),
+                    entry("return", RETURN),
+                    entry("super", SUPER),
+                    entry("this", THIS),
+                    entry("true", TRUE),
+                    entry("var", VAR),
+                    entry("while", WHILE));
 
     /** Stores source text. */
     private final String source;
@@ -29,7 +51,6 @@ class Scanner {
      * @param source Source text to scan.
      */
     Scanner(String source) {
-
         if (null == source) throw new IllegalArgumentException("Source text must be defined.");
         this.source = source;
     }
@@ -126,11 +147,23 @@ class Scanner {
             default:
                 if (isDigit(c)) {
                     number();
+                } else if (isAlpha(c)) {
+                    identifier();
                 } else {
                     Lox.error(line, "Unexpected character.");
                 }
                 break;
         }
+    }
+
+    /** Consumes identifier {@link Token} from source text. */
+    private void identifier() {
+        while (isAlphaNumeric(peek())) advance();
+
+        var text = source.substring(start, current);
+        var type = keywords.get(text);
+        if (null == type) type = IDENTIFIER;
+        addToken(type);
     }
 
     /** Consumes number {@link Token} from source text. */
@@ -206,6 +239,26 @@ class Scanner {
      */
     private char peekNext() {
         return current + 1 >= source.length() ? '\0' : source.charAt(current + 1);
+    }
+
+    /**
+     * Whether character represents letter.
+     *
+     * @param c Character to analyse.
+     * @return {@code true} if character is letter; {@code false} otherwise.
+     */
+    private boolean isAlpha(char c) {
+        return ('a' <= c && 'z' >= c) || ('A' <= c && 'Z' >= c) || '_' == c;
+    }
+
+    /**
+     * Whether character represents letter or numeral.
+     *
+     * @param c Character to analyse.
+     * @return {@code true} if character is letter or numeral; {@code false} otherwise.
+     */
+    private boolean isAlphaNumeric(char c) {
+        return isAlpha(c) || isDigit(c);
     }
 
     /**

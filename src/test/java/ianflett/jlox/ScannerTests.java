@@ -1,6 +1,7 @@
 package ianflett.jlox;
 
 import static com.github.stefanbirkner.systemlambda.SystemLambda.*;
+import static ianflett.jlox.TokenType.*;
 import static java.util.Map.entry;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -57,13 +58,13 @@ public class ScannerTests {
      * valid character sequence.
      *
      * @param source Source text to analyse.
-     * @param token Expected {@link Token} emitted.
+     * @param expected Expected {@link Token} emitted.
      */
     @ParameterizedTest(name = "\"{0}\" = <{1}>")
     @MethodSource("scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence_data")
     void scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence(
-            String source, Token token) {
-        assertThat(new Scanner(source).scanTokens(), contains(token, EOF_TOKEN));
+            String source, Token expected) {
+        assertThat(new Scanner(source).scanTokens(), contains(expected, EOF_TOKEN));
     }
 
     /**
@@ -233,6 +234,44 @@ public class ScannerTests {
                         new Token(TokenType.DOT, ".", null, 1),
                         new Token(TokenType.NUMBER, "34", 34d, 1),
                         EOF_TOKEN));
+    }
+
+    /**
+     * Tests {@link Scanner#scanTokens()} emits keyword {@link Token}s if {@code source} contains
+     * keyword.
+     *
+     * @param source Source text to analyse.
+     */
+    @ParameterizedTest
+    @ValueSource(
+            strings = {
+                "and", "class", "else", "false", "for", "fun", "if", "nil", "or", "print", "return",
+                "super", "this", "true", "var", "while"
+            })
+    void scanTokens_emitsKeyword_whenValidKeyword(String source) {
+        assertThat(
+                new Scanner(source).scanTokens(),
+                contains(
+                        new Token(
+                                Enum.valueOf(TokenType.class, source.toUpperCase()),
+                                source,
+                                null,
+                                1),
+                        EOF_TOKEN));
+    }
+
+    /**
+     * Tests {@link Scanner#scanTokens()} emits identifier {@link Token}s if {@code source} doesn't
+     * contain keyword.
+     *
+     * @param source Source text to analyse.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {"rand", "outclassed", "form"})
+    void scanTokens_emitsIdentifier_whenInvalidKeyword(String source) {
+        assertThat(
+                new Scanner(source).scanTokens(),
+                contains(new Token(IDENTIFIER, source, null, 1), EOF_TOKEN));
     }
 
     /** End of file token. */
