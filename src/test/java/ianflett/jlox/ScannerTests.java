@@ -42,6 +42,7 @@ public class ScannerTests {
     /**
      * Tests {@link Scanner#scanTokens()} emits error if {@code source} contains invalid character.
      *
+     * @param source Source text to analyse.
      * @throws Exception Reading from standard error threw exception.
      */
     @ParameterizedTest
@@ -52,8 +53,11 @@ public class ScannerTests {
     }
 
     /**
-     * Tests {@link Scanner#scanTokens()} emits correct token if {@code source} contains valid
-     * character sequence.
+     * Tests {@link Scanner#scanTokens()} emits correct {@link Token} if {@code source} contains
+     * valid character sequence.
+     *
+     * @param source Source text to analyse.
+     * @param token Expected {@link Token} emitted.
      */
     @ParameterizedTest(name = "\"{0}\" = <{1}>")
     @MethodSource("scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence_data")
@@ -95,8 +99,10 @@ public class ScannerTests {
     }
 
     /**
-     * Tests {@link Scanner#scanTokens()} emits no token if {@code source} contains comment or
-     * whitespace character.
+     * Tests {@link Scanner#scanTokens()} emits no {@link Token} if {@code source} contains comment
+     * or whitespace character.
+     *
+     * @param source Source text to analyse.
      */
     @ParameterizedTest(name = "\"{0}\"")
     @ValueSource(strings = {"//", "// This is a comment.", " ", "\r", "\t"})
@@ -105,8 +111,8 @@ public class ScannerTests {
     }
 
     /**
-     * Tests {@link Scanner#scanTokens()} emits no token but advances line number if {@code source}
-     * contains new line character.
+     * Tests {@link Scanner#scanTokens()} emits no {@link Token} but advances line number if {@code
+     * source} contains new line character.
      */
     @Test
     void scanTokens_emitsNothingAndAdvancesLine_whenNewLine() {
@@ -121,8 +127,11 @@ public class ScannerTests {
     }
 
     /**
-     * Tests {@link Scanner#scanTokens()} emits string token if {@code source} contains text within
-     * quotes.
+     * Tests {@link Scanner#scanTokens()} emits string {@link Token} if {@code source} contains text
+     * within quotes.
+     *
+     * @param source Source text to analyse.
+     * @param line Expected line number.
      */
     @ParameterizedTest(name = "\"{0}\"")
     @MethodSource("scanTokens_emitsString_whenTextWithinQuotes_data")
@@ -149,6 +158,81 @@ public class ScannerTests {
                 arguments("\"\"", 1),
                 arguments("\"This is a string.\"", 1),
                 arguments("\"This is a\nmultiline string.\"", 2));
+    }
+
+    /**
+     * Tests {@link Scanner#scanTokens()} emits number {@link Token} if {@code source} contains
+     * contiguous numerals potentially containing one period character.
+     *
+     * @param source Source text to analyse.
+     */
+    @ParameterizedTest
+    @ValueSource(strings = {" 1234", "12.34 ", "0.1234", "1234.0"})
+    void scanTokens_emitsNumber_whenValidNumber(String source) {
+        assertThat(
+                new Scanner(source).scanTokens(),
+                contains(
+                        new Token(TokenType.NUMBER, source.trim(), Double.parseDouble(source), 1),
+                        EOF_TOKEN));
+    }
+
+    /**
+     * Tests {@link Scanner#scanTokens()} emits dot and number {@link Token}s if {@code source}
+     * contains contiguous numerals containing one period character at start.
+     */
+    @Test
+    void scanTokens_emitsCorrectTokens_whenNumberHasLeadingDot() {
+        assertThat(
+                new Scanner(".1234").scanTokens(),
+                contains(
+                        new Token(TokenType.DOT, ".", null, 1),
+                        new Token(TokenType.NUMBER, "1234", 1234d, 1),
+                        EOF_TOKEN));
+    }
+
+    /**
+     * Tests {@link Scanner#scanTokens()} emits number and dot {@link Token}s if {@code source}
+     * contains contiguous numerals containing one period character at end.
+     */
+    @Test
+    void scanTokens_emitsCorrectTokens_whenNumberHasTrailingDot() {
+        assertThat(
+                new Scanner("1234.").scanTokens(),
+                contains(
+                        new Token(TokenType.NUMBER, "1234", 1234d, 1),
+                        new Token(TokenType.DOT, ".", null, 1),
+                        EOF_TOKEN));
+    }
+
+    /**
+     * Tests {@link Scanner#scanTokens()} emits correct number {@link Token}s if {@code source}
+     * contains contiguous numerals containing multiple period characters.
+     */
+    @Test
+    void scanTokens_emitsCorrectTokens_whenNumberHasTooManyDots() {
+        assertThat(
+                new Scanner("1.23.4").scanTokens(),
+                contains(
+                        new Token(TokenType.NUMBER, "1.23", 1.23d, 1),
+                        new Token(TokenType.DOT, ".", null, 1),
+                        new Token(TokenType.NUMBER, "4", 4d, 1),
+                        EOF_TOKEN));
+    }
+
+    /**
+     * Tests {@link Scanner#scanTokens()} emits correct number {@link Token}s if {@code source}
+     * contains contiguous numerals containing multiple contiguous period characters.
+     */
+    @Test
+    void scanTokens_emitsCorrectTokens_whenNumberHasContiguousDots() {
+        assertThat(
+                new Scanner("12..34").scanTokens(),
+                contains(
+                        new Token(TokenType.NUMBER, "12", 12d, 1),
+                        new Token(TokenType.DOT, ".", null, 1),
+                        new Token(TokenType.DOT, ".", null, 1),
+                        new Token(TokenType.NUMBER, "34", 34d, 1),
+                        EOF_TOKEN));
     }
 
     /** End of file token. */

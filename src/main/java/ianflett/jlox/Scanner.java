@@ -124,11 +124,31 @@ class Scanner {
                 string();
                 break;
             default:
-                Lox.error(line, "Unexpected character.");
+                if (isDigit(c)) {
+                    number();
+                } else {
+                    Lox.error(line, "Unexpected character.");
+                }
                 break;
         }
     }
 
+    /** Consumes number {@link Token} from source text. */
+    private void number() {
+        while (isDigit(peek())) advance();
+
+        // Look for fractional part.
+        if (peek() == '.' && isDigit(peekNext())) {
+            // Consume '.'.
+            advance();
+
+            while (isDigit(peek())) advance();
+        }
+
+        addToken(NUMBER, Double.parseDouble(source.substring(start, current)));
+    }
+
+    /** Consumes string {@link Token} from source text. */
     private void string() {
         while (peek() != '"' && !isAtEnd()) {
             if (peek() == '\n') ++line;
@@ -177,6 +197,25 @@ class Scanner {
      */
     private char peek() {
         return isAtEnd() ? '\0' : source.charAt(current);
+    }
+
+    /**
+     * Looks ahead two characters in source text.
+     *
+     * @return Character, or null character if at end of file.
+     */
+    private char peekNext() {
+        return current + 1 >= source.length() ? '\0' : source.charAt(current + 1);
+    }
+
+    /**
+     * Whether character represents numeral.
+     *
+     * @param c Character to analyse.
+     * @return {@code true} if character represents numeral; {@code false} otherwise.
+     */
+    private boolean isDigit(char c) {
+        return '0' <= c && '9' >= c;
     }
 
     /**
