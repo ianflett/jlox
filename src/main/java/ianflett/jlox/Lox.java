@@ -24,7 +24,7 @@ public final class Lox {
      *     instructions.
      * @throws IOException Thrown if input cannot be read.
      */
-    public static void main(String[] args) throws IOException {
+    public static void main(String... args) throws IOException {
 
         if (SINGLE_ARG < args.length) {
             System.out.println("Usage: jlox [script]");
@@ -60,8 +60,8 @@ public final class Lox {
      */
     private static void runPrompt() throws IOException {
 
-        try (var input = new InputStreamReader(System.in)) {
-            var reader = new BufferedReader(input);
+        try (var input = new InputStreamReader(System.in);
+            var reader = new BufferedReader(input)) {
 
             for (; ; ) {
                 System.out.print("> ");

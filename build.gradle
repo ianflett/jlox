@@ -7,10 +7,15 @@ plugins {
 }
 
 group = 'ianflett.jlox'
-version = '0.4.6.0'
+version = '0.4.7.0'
 
 application {
     mainClass = "${group}.Lox"
+}
+
+// https://stackoverflow.com/a/13172566
+run{
+    standardInput = System.in
 }
 
 apply from: "$rootDir/gradle/details.gradle"
