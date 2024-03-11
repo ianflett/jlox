@@ -1,3 +1,5 @@
+import java.nio.file.Paths
+
 plugins {
     id 'application'
     id 'com.diffplug.spotless' version '6.25.0'
@@ -7,9 +9,10 @@ plugins {
 }
 
 group = 'com.github.ianflett.jlox'
-version = '0.5.0.0'
+version = '0.5.1.0'
 
 apply from: "$rootDir/gradle/details.gradle"
+apply from: "$rootDir/gradle/generate-ast.gradle"
 apply from: "$rootDir/gradle/manifest.gradle"
 
 repositories {
@@ -29,6 +32,16 @@ java {
     }
 }
 
+defineAst {
+    outputDir = Paths.get('src', 'main', 'java', 'com', 'github', 'ianflett', 'jlox').toString()
+    baseName = 'Expr'
+    types = Arrays.asList(
+        'Binary : Expr left, Token operator, Expr right',
+        'Grouping : Expr expression',
+        'Literal : Object value',
+        'Unary : Token operator, Expr right'
+    )
+}
 
 // https://medium.com/@anirudhramesh95/enforcing-formatting-standards-for-your-java-project-using-gradle-2c21172743e5
 spotless {

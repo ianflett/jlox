@@ -1,3 +1,6 @@
+# Exclude generated files.
+/src/main/java/com/github/ianflett/jlox/Expr.java
+
 # Created by https://www.toptal.com/developers/gitignore/api/git,gradle,intellij+all,java
 # Edit at https://www.toptal.com/developers/gitignore?templates=git,gradle,intellij+all,java
 

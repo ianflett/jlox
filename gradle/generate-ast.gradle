@@ -1,0 +1,67 @@
+import java.nio.file.Files
+import java.nio.file.Paths
+
+tasks.register('defineAst') {
+    group = 'build'
+    description = 'Dynamically generates abstract syntax trees prior to compilation.'
+
+    ext {
+        outputDir = ''
+        baseName = ''
+        types = Arrays.asList()
+    }
+
+    doLast {
+        if (!Files.exists(Paths.get(outputDir))) file(outputDir).mkdirs()
+        def path = Paths.get(outputDir.toString(), "${baseName}.java").toString()
+
+        try (PrintWriter writer = new PrintWriter(path, 'UTF8')) {
+            writer.println 'import java.util.List;'
+            writer.println()
+            writer.println "abstract class $baseName {"
+
+            // AST classes.
+            types.each { def type ->
+                def data = type.split ':'
+                defineType(writer, baseName, data[0].trim(), data[1].trim())
+            }
+
+            writer.println '}'
+        }
+    }
+}
+
+build.dependsOn defineAst
+
+/**
+ * Defines a type within an abstract syntax tree class.
+ *
+ * @param writer {@link PrintWriter} to use.
+ * @param baseName Base class name.
+ * @param className This class name.
+ * @param fieldList List of fields.
+ */
+static void defineType(PrintWriter writer, String baseName, String className, String fieldList) {
+
+    writer.println "    static class $className extends $baseName {"
+
+    // Constructor.
+    writer.println "        $className($fieldList) {"
+
+    // Store parameters in fields.
+    def fields = fieldList.split ', '
+    fields.each { def field ->
+        def name = field.split(' ')[1]
+        writer.println "            this.$name = $name;"
+    }
+
+    writer.println '        }'
+
+    // Fields
+    writer.println()
+    fields.each { def field ->
+        writer.println "        final $field;"
+    }
+
+    writer.println '    }'
+}
