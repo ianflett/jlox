@@ -6,24 +6,33 @@ tasks.register('defineAst') {
     description = 'Dynamically generates abstract syntax trees prior to compilation.'
 
     ext {
-        outputDir = ''
-        baseName = ''
-        types = Arrays.asList()
+        baseDir = project.sourceSets.main.java.srcDirs?[0].toString() ?: ''
+        namespace = ''
+        className = ''
+        types = [:]
     }
 
     doLast {
-        if (!Files.exists(Paths.get(outputDir))) file(outputDir).mkdirs()
-        def path = Paths.get(outputDir.toString(), "${baseName}.java").toString()
+        def hasNamespace = '' != namespace?.trim()
+
+        def targetDir = hasNamespace ? Paths.get(baseDir, namespace.split(/\./)).toString() : baseDir
+        if (!Files.exists(Paths.get(targetDir))) file(targetDir).mkdirs()
+        def path = Paths.get(targetDir, "${className}.java").toString()
 
         try (PrintWriter writer = new PrintWriter(path, 'UTF8')) {
+
+            if (hasNamespace) {
+                writer.println "package $namespace;"
+                writer.println()
+            }
+
             writer.println 'import java.util.List;'
             writer.println()
-            writer.println "abstract class $baseName {"
+            writer.println "abstract class $className {"
 
             // AST classes.
             types.each { def type ->
-                def data = type.split ':'
-                defineType(writer, baseName, data[0].trim(), data[1].trim())
+                defineType(writer, className, type.key, type.value)
             }
 
             writer.println '}'
@@ -37,16 +46,16 @@ build.dependsOn defineAst
  * Defines a type within an abstract syntax tree class.
  *
  * @param writer {@link PrintWriter} to use.
- * @param baseName Base class name.
- * @param className This class name.
+ * @param parentClassName Parent class's name.
+ * @param subclassName Subclass's name.
  * @param fieldList List of fields.
  */
-static void defineType(PrintWriter writer, String baseName, String className, String fieldList) {
+static void defineType(PrintWriter writer, String parentClassName, String subclassName, String fieldList) {
 
-    writer.println "    static class $className extends $baseName {"
+    writer.println "    static class $subclassName extends $parentClassName {"
 
     // Constructor.
-    writer.println "        $className($fieldList) {"
+    writer.println "        $subclassName($fieldList) {"
 
     // Store parameters in fields.
     def fields = fieldList.split ', '
