@@ -1,4 +1,4 @@
-package ianflett.jlox;
+package com.github.ianflett.jlox;
 
 /**
  * Represents {@link Token} (keyword, operator, punctuation, literal) in Lox language.

@@ -1,4 +1,4 @@
-package ianflett.jlox;
+package com.github.ianflett.jlox;
 
 /**
  * Defines standard system exit codes as defined by POSIX systems.
@@ -6,6 +6,7 @@ package ianflett.jlox;
  * @see <a
  *     href="https://man.freebsd.org/cgi/man.cgi?query=sysexits&apropos=0&sektion=0&manpath=FreeBSD+4.3-RELEASE&format=html">sysexits.h</a>
  */
+@SuppressWarnings("unused")
 public enum PosixExits {
 
     /** Program executed successfully. */

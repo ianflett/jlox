@@ -1,6 +1,6 @@
-package ianflett.jlox;
+package com.github.ianflett.jlox;
 
-import static ianflett.jlox.TokenType.*;
+import static com.github.ianflett.jlox.TokenType.*;
 import static java.util.Map.entry;
 
 import java.util.ArrayList;

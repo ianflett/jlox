@@ -1,4 +1,4 @@
-package ianflett.jlox;
+package com.github.ianflett.jlox;
 
 /** Defines all tokens for Lox language. */
 enum TokenType {

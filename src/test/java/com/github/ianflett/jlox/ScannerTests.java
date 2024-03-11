@@ -1,7 +1,7 @@
-package ianflett.jlox;
+package com.github.ianflett.jlox;
 
 import static com.github.stefanbirkner.systemlambda.SystemLambda.*;
-import static ianflett.jlox.TokenType.*;
+import static com.github.ianflett.jlox.TokenType.*;
 import static java.util.Map.entry;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -10,6 +10,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.Set;
 import java.util.stream.Stream;
+
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;

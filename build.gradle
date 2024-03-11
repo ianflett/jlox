@@ -6,7 +6,7 @@ plugins {
     id 'jvm-test-suite'
 }
 
-group = 'ianflett.jlox'
+group = 'com.github.ianflett.jlox'
 version = '0.4.7.0'
 
 application {

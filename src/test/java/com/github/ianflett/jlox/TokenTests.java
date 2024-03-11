@@ -1,4 +1,4 @@
-package ianflett.jlox;
+package com.github.ianflett.jlox;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
