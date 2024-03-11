@@ -7,16 +7,7 @@ plugins {
 }
 
 group = 'com.github.ianflett.jlox'
-version = '0.4.7.0'
-
-application {
-    mainClass = "${group}.Lox"
-}
-
-// https://stackoverflow.com/a/13172566
-run{
-    standardInput = System.in
-}
+version = '0.5.0.0'
 
 apply from: "$rootDir/gradle/details.gradle"
 apply from: "$rootDir/gradle/manifest.gradle"
@@ -30,7 +21,6 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testImplementation 'org.hamcrest:hamcrest:2.2'
     testImplementation 'com.github.stefanbirkner:system-lambda:1.2.1'
-
 }
 
 java {
@@ -39,13 +29,6 @@ java {
     }
 }
 
-testing {
-    suites {
-        test {
-            useJUnitJupiter()
-        }
-    }
-}
 
 // https://medium.com/@anirudhramesh95/enforcing-formatting-standards-for-your-java-project-using-gradle-2c21172743e5
 spotless {
@@ -69,4 +52,23 @@ spotless {
         googleJavaFormat('1.20.0').aosp().reflowLongStrings()
         formatAnnotations()
     }
+}
+
+testing {
+    suites {
+        test {
+            useJUnitJupiter()
+        }
+    }
+}
+
+getDetails.company = 'Ian Flett'
+
+application {
+    mainClass = "${group}.Lox"
+}
+
+// https://stackoverflow.com/a/13172566
+run {
+    standardInput = System.in
 }

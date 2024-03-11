@@ -1,42 +1,42 @@
 if (version.getClass() == String.class) {
-	version = Version.newInstance(
-		version,
-		System.env.BUILD_NUMBER \
-			? System.env.BUILD_NUMBER.toInteger()
-			: null)
+    version = Version.newInstance(
+        version,
+        System.env.BUILD_NUMBER \
+            ? System.env.BUILD_NUMBER.toInteger()
+            : null)
 }
 
 class Version {
-	int major
-	int minor
-	Integer build
+    int major
+    int minor
+    Integer build
 
-	Version(int major, int minor) { this(major, minor, null) }
+    Version(int major, int minor) { this(major, minor, null) }
 
-	Version(int major, int minor, Integer build) {
+    Version(int major, int minor, Integer build) {
 
-		this.major = major
-		this.minor = minor
-		this.build = build
-	}
+        this.major = major
+        this.minor = minor
+        this.build = build
+    }
 
-	@Override
-	String toString() {
-		String fullVersion = "$major.$minor"
-		if (build) fullVersion += ".$build"
-		fullVersion
-	}
+    @Override
+    String toString() {
+        String fullVersion = "$major.$minor"
+        if (build) fullVersion += ".$build"
+        fullVersion
+    }
 
-	static Version newInstance(String version) { newInstance(version, null) }
+    static Version newInstance(String version) { newInstance(version, null) }
 
-	static Version newInstance(String version, Integer build) {
-		def (major, minor, buildNumber) = version.tokenize('.')
-		(build || buildNumber) \
-			? new Version(major.toInteger(), minor.toInteger(), build ?: buildNumber.toInteger())
-			: new Version(major.toInteger(), minor.toInteger())
-	}
+    static Version newInstance(String version, Integer build) {
+        def (major, minor, buildNumber) = version.tokenize('.')
+        (build || buildNumber) \
+            ? new Version(major.toInteger(), minor.toInteger(), build ?: buildNumber.toInteger())
+            : new Version(major.toInteger(), minor.toInteger())
+    }
 
-	static Version newInstance(int major, int minor, Integer build) {
+    static Version newInstance(int major, int minor, Integer build) {
         new Version(major, minor, build)
     }
 }
