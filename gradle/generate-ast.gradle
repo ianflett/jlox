@@ -28,28 +28,35 @@ tasks.register('defineAst') {
             writer.println()
             writer.println "abstract class $className {"
 
+            defineVisitor(writer, className, types.keySet())
+
             // AST classes.
             types.each { def type ->
                 defineType(writer, className, type.key, type.value)
             }
+
+            // Base accept() method.
+            writer.println()
+            writer.println '    abstract <R> R accept(Visitor<R> visitor);'
 
             writer.println '}'
         }
     }
 }
 
-build.dependsOn defineAst
+compileJava.dependsOn defineAst
 
 /**
- * Defines a type within an abstract syntax tree class.
+ * Defines type within abstract syntax tree class.
  *
- * @param writer {@link PrintWriter} to use.
+ * @param writer {@link PrintWriter} for output.
  * @param parentClassName Parent class's name.
  * @param subclassName Subclass's name.
  * @param fieldList List of fields.
  */
 static void defineType(PrintWriter writer, String parentClassName, String subclassName, String fieldList) {
 
+    writer.println()
     writer.println "    static class $subclassName extends $parentClassName {"
 
     // Constructor.
@@ -64,10 +71,36 @@ static void defineType(PrintWriter writer, String parentClassName, String subcla
 
     writer.println '        }'
 
+    // Visitor pattern.
+    writer.println()
+    writer.println '        @Override'
+    writer.println '        <R> R accept(Visitor<R> visitor) {'
+    writer.println "            return visitor.visit$subclassName$parentClassName(this);"
+    writer.println '        }'
+
     // Fields
     writer.println()
     fields.each { def field ->
         writer.println "        final $field;"
+    }
+
+    writer.println '    }'
+}
+
+/**
+ * Add new operation to each type in abstract syntax tree.
+ *
+ * @param writer {@link PrintWriter} for output.
+ * @param parentTypeName Parent type's name.
+ * @param typeNames All types to define.
+ */
+static void defineVisitor(PrintWriter writer, String parentTypeName, Set<String> typeNames) {
+
+    writer.println()
+    writer.println '    interface Visitor<R> {'
+
+    typeNames.each { typeName ->
+        writer.println "        R visit$typeName$parentTypeName($typeName ${parentTypeName.toLowerCase()});"
     }
 
     writer.println '    }'
