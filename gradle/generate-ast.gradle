@@ -6,22 +6,20 @@ tasks.register('defineAst') {
     description = 'Dynamically generates abstract syntax trees prior to compilation.'
 
     ext {
-        baseDir = project.sourceSets.main.java.srcDirs?[0].toString() ?: ''
+        sourceSet = project.sourceSets.main.java
         namespace = ''
         className = ''
         types = [:]
     }
 
     doLast {
-        def hasNamespace = '' != namespace?.trim()
-
-        def targetDir = hasNamespace ? Paths.get(baseDir, namespace.split(/\./)).toString() : baseDir
+        def targetDir = Paths.get(sourceSet.srcDirs?[0].toString(), namespace?.split(/\./)).toString()
         if (!Files.exists(Paths.get(targetDir))) file(targetDir).mkdirs()
         def path = Paths.get(targetDir, "${className}.java").toString()
 
         try (PrintWriter writer = new PrintWriter(path, 'UTF8')) {
 
-            if (hasNamespace) {
+            if (namespace?.trim()) {
                 writer.println "package $namespace;"
                 writer.println()
             }
