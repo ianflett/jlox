@@ -1,7 +1,7 @@
 package com.github.ianflett.jlox;
 
-import static com.github.stefanbirkner.systemlambda.SystemLambda.*;
 import static com.github.ianflett.jlox.TokenType.*;
+import static com.github.stefanbirkner.systemlambda.SystemLambda.*;
 import static java.util.Map.entry;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -10,7 +10,6 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.Set;
 import java.util.stream.Stream;
-
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -126,7 +125,7 @@ public class ScannerTests {
      * @param line Expected line number.
      */
     @ParameterizedTest(name = "\"{0}\"")
-    @MethodSource("scanTokens_emitsNothing_whenMultiComment")
+    @MethodSource("scanTokens_emitsNothing_whenMultiComment_data")
     void scanTokens_emitsNothing_whenMultiComment(String source, int line) {
         assertThat(
                 new Scanner(source).scanTokens(),
@@ -135,7 +134,13 @@ public class ScannerTests {
                                 EOF_TOKEN.type(), EOF_TOKEN.lexeme(), EOF_TOKEN.literal(), line)));
     }
 
-    static Stream<Arguments> scanTokens_emitsNothing_whenMultiComment() {
+    /**
+     * Data source for {@link #scanTokens_emitsNothing_whenMultiComment(String, int)}
+     * scanTokens_emitsNothing_whenMultiComment()} tests.
+     *
+     * @return Test argument data.
+     */
+    static Stream<Arguments> scanTokens_emitsNothing_whenMultiComment_data() {
         return Stream.of(
                 arguments("/**/", 1),
                 arguments("/* This is a comment. */", 1),
