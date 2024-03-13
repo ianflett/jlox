@@ -61,7 +61,7 @@ public final class Lox {
     private static void runPrompt() throws IOException {
 
         try (var input = new InputStreamReader(System.in);
-            var reader = new BufferedReader(input)) {
+                var reader = new BufferedReader(input)) {
 
             for (; ; ) {
                 System.out.print("> ");
