@@ -1,7 +1,7 @@
 package com.github.ianflett.jlox;
 
-/** Represents abstract syntax tree in Lisp form. */
-class AstPrinter implements Expr.Visitor<String> {
+/** Represents abstract syntax tree in reverse Polish notation form. */
+class AstReversePolishNotationPrinter implements Expr.Visitor<String> {
 
     /**
      * Represents expression and all child components.
@@ -21,7 +21,7 @@ class AstPrinter implements Expr.Visitor<String> {
      */
     @Override
     public String visitBinaryExpr(Expr.Binary expr) {
-        return parenthesize(expr.operator.lexeme(), expr.left, expr.right);
+        return reverseNotation(expr.operator.lexeme(), expr.left, expr.right);
     }
 
     /**
@@ -32,7 +32,7 @@ class AstPrinter implements Expr.Visitor<String> {
      */
     @Override
     public String visitGroupingExpr(Expr.Grouping expr) {
-        return parenthesize("group", expr.expression);
+        return expr.expression.accept(this);
     }
 
     /**
@@ -55,25 +55,24 @@ class AstPrinter implements Expr.Visitor<String> {
      */
     @Override
     public String visitUnaryExpr(Expr.Unary expr) {
-        return parenthesize(expr.operator.lexeme(), expr.right);
+        return reverseNotation(expr.operator.lexeme(), expr.right);
     }
 
     /**
-     * Wraps expression in parentheses.
+     * Appends operator.
      *
      * @param name {@link Expr}ession name.
      * @param exprs Child {@link Expr}essions.
      * @return {@link String} representation of expression.
      */
-    private String parenthesize(String name, Expr... exprs) {
+    private String reverseNotation(String name, Expr... exprs) {
         var builder = new StringBuilder();
 
-        builder.append('(').append(name);
         for (Expr expr : exprs) {
-            builder.append(' ');
             builder.append(expr.accept(this));
+            builder.append(' ');
         }
-        builder.append(')');
+        builder.append(name);
 
         return builder.toString();
     }
