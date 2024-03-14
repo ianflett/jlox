@@ -33,7 +33,7 @@ ${
             // AST classes.
             types.collect { def type ->
                 defineType(className, type.key, type.value)
-            }.join System.getProperty('line.separator')
+            }.join System.lineSeparator()
 }
 
     abstract <R> R accept(Visitor<R> visitor);
@@ -62,7 +62,7 @@ ${
     fields.collect { def field ->
         def name = field.split(' ')[1]
 "            this.$name = $name;"
-    }.join System.getProperty('line.separator')
+    }.join System.lineSeparator()
 }
         }
 
@@ -74,7 +74,7 @@ ${
 ${ // Fields.
 fields.collect { def field ->
 "        final $field;"
-}.join System.getProperty('line.separator')}
+}.join System.lineSeparator()}
     }"""
 }
 
@@ -90,6 +90,6 @@ static String defineVisitor(String parentTypeName, Set<String> typeNames) {
     interface Visitor<R> {
 ${typeNames.collect { typeName ->
 "        R visit$typeName$parentTypeName($typeName ${parentTypeName.toLowerCase()});"
-}.join System.getProperty('line.separator')}
+}.join System.lineSeparator()}
     }"""
 }

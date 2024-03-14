@@ -1,5 +1,7 @@
 package com.github.ianflett.jlox;
 
+import java.util.Stack;
+
 /** Prints abstract syntax tree structure. */
 abstract class AstPrinter implements Expr.Visitor<String> {
 
@@ -139,6 +141,82 @@ abstract class AstPrinter implements Expr.Visitor<String> {
             builder.append(name);
 
             return builder.toString();
+        }
+    }
+
+    /** Represents abstract syntax tree in directory form. */
+    static class Directory extends AstPrinter {
+
+        /** Stores the current indents. */
+        private final Stack<String> indents = new Stack<>();
+
+        /** {@inheritDoc} */
+        @Override
+        public String visitBinaryExpr(Expr.Binary expr) {
+
+            return String.format(
+                    "%s%s%n%s%s",
+                    processIndent(true),
+                    expr.operator.lexeme(),
+                    processChildNode("├", expr.left),
+                    processChildNode("└", expr.right));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String visitGroupingExpr(Expr.Grouping expr) {
+
+            return String.format(
+                    "%s()%n%s", processIndent(true), processChildNode("└", expr.expression));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String visitLiteralExpr(Expr.Literal expr) {
+
+            return String.format(
+                    "%s%s%n", processIndent(false), (null == expr.value ? "nil" : expr.value));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String visitUnaryExpr(Expr.Unary expr) {
+
+            return String.format(
+                    "%s%s%n%s",
+                    processIndent(true), expr.operator.lexeme(), processChildNode("└", expr.right));
+        }
+
+        /**
+         * Process indents; can adjust initial bullet for subsequent processing.
+         *
+         * @param doAdjust Whether to adjust indent.
+         * @return Indent to apply.
+         */
+        private String processIndent(boolean doAdjust) {
+
+            if (indents.empty()) return "";
+
+            var builder = new StringBuilder();
+
+            for (var indent : indents) {
+                builder.append(indent).append(' ');
+            }
+
+            if (doAdjust) {
+                indents.push("├".equals(indents.pop()) ? "│" : " ");
+            }
+
+            return builder.toString();
+        }
+
+        /** Process child node. */
+        private String processChildNode(String bullet, Expr child) {
+
+            indents.push(bullet);
+            String output = child.accept(this);
+            indents.pop();
+            return output;
         }
     }
 }
