@@ -72,9 +72,9 @@ class Scanner {
     }
 
     /**
-     * Whether scanner has reached end of source text.
+     * Whether {@link #source} is exhausted.
      *
-     * @return {@code true} if at end of source text; {@code false} otherwise.
+     * @return {@code true} if at end of {@link #source}; {@code false} otherwise.
      */
     private boolean isAtEnd() {
         return source.length() <= current;
