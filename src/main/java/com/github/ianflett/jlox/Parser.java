@@ -37,11 +37,11 @@ public class Parser {
      * @return Equality {@link Expr}ession or {@link #comparison()}.
      */
     private Expr equality() {
-        Expr expr = comparison();
+        var expr = comparison();
 
         while (match(BANG_EQUAL, EQUAL_EQUAL)) {
-            Token operator = previous();
-            Expr right = comparison();
+            var operator = previous();
+            var right = comparison();
             expr = new Expr.Binary(expr, operator, right);
         }
 
@@ -54,11 +54,11 @@ public class Parser {
      * @return Comparison {@link Expr}ession or {@link #term()}.
      */
     private Expr comparison() {
-        Expr expr = term();
+        var expr = term();
 
         while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
-            Token operator = previous();
-            Expr right = term();
+            var operator = previous();
+            var right = term();
             expr = new Expr.Binary(expr, operator, right);
         }
 
@@ -71,11 +71,11 @@ public class Parser {
      * @return Term {@link Expr}ession or {@link #factor()}.
      */
     private Expr term() {
-        Expr expr = factor();
+        var expr = factor();
 
         while (match(MINUS, PLUS)) {
-            Token operator = previous();
-            Expr right = factor();
+            var operator = previous();
+            var right = factor();
             expr = new Expr.Binary(expr, operator, right);
         }
 
@@ -88,11 +88,11 @@ public class Parser {
      * @return Factor {@link Expr}ession or {@link #unary()}.
      */
     private Expr factor() {
-        Expr expr = unary();
+        var expr = unary();
 
         while (match(SLASH, STAR)) {
-            Token operator = previous();
-            Expr right = unary();
+            var operator = previous();
+            var right = unary();
             expr = new Expr.Binary(expr, operator, right);
         }
 
@@ -106,8 +106,8 @@ public class Parser {
      */
     private Expr unary() {
         if (match(BANG, MINUS)) {
-            Token operator = previous();
-            Expr right = unary();
+            var operator = previous();
+            var right = unary();
             return new Expr.Unary(operator, right);
         }
 
@@ -126,7 +126,7 @@ public class Parser {
         if (match(NUMBER, STRING)) return new Expr.Literal(previous().literal());
 
         if (match(LEFT_PAREN)) {
-            Expr expr = expression();
+            var expr = expression();
             consume(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }
@@ -146,7 +146,7 @@ public class Parser {
      *     otherwise.
      */
     private boolean match(TokenType... types) {
-        for (TokenType type : types) {
+        for (var type : types) {
             if (check(type)) {
                 advance();
                 return true;
