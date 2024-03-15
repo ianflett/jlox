@@ -2,7 +2,9 @@ package com.github.ianflett.jlox;
 
 import static com.github.ianflett.jlox.TokenType.*;
 
+import com.github.ianflett.jlox.Expr.Binary;
 import java.util.List;
+import java.util.function.Supplier;
 
 /** Recursive decent parser that consumes tokens to produce abstract syntax tree. */
 public class Parser {
@@ -37,15 +39,7 @@ public class Parser {
      * @return Equality {@link Expr}ession or {@link #comparison()}.
      */
     private Expr equality() {
-        var expr = comparison();
-
-        while (match(BANG_EQUAL, EQUAL_EQUAL)) {
-            var operator = previous();
-            var right = comparison();
-            expr = new Expr.Binary(expr, operator, right);
-        }
-
-        return expr;
+        return parseBinary(this::comparison, BANG_EQUAL, EQUAL_EQUAL);
     }
 
     /**
@@ -54,15 +48,7 @@ public class Parser {
      * @return Comparison {@link Expr}ession or {@link #term()}.
      */
     private Expr comparison() {
-        var expr = term();
-
-        while (match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)) {
-            var operator = previous();
-            var right = term();
-            expr = new Expr.Binary(expr, operator, right);
-        }
-
-        return expr;
+        return parseBinary(this::term, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL);
     }
 
     /**
@@ -71,15 +57,7 @@ public class Parser {
      * @return Term {@link Expr}ession or {@link #factor()}.
      */
     private Expr term() {
-        var expr = factor();
-
-        while (match(MINUS, PLUS)) {
-            var operator = previous();
-            var right = factor();
-            expr = new Expr.Binary(expr, operator, right);
-        }
-
-        return expr;
+        return parseBinary(this::factor, MINUS, PLUS);
     }
 
     /**
@@ -88,15 +66,7 @@ public class Parser {
      * @return Factor {@link Expr}ession or {@link #unary()}.
      */
     private Expr factor() {
-        var expr = unary();
-
-        while (match(SLASH, STAR)) {
-            var operator = previous();
-            var right = unary();
-            expr = new Expr.Binary(expr, operator, right);
-        }
-
-        return expr;
+        return parseBinary(this::unary, SLASH, STAR);
     }
 
     /**
@@ -132,6 +102,25 @@ public class Parser {
         }
 
         throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Parses a {@link Binary} grammar rule.
+     *
+     * @param higher Next higher {@link Expr} parser.
+     * @param types {@link TokenType}s to check for.
+     * @return {@link Binary} expression or higher.
+     */
+    private Expr parseBinary(Supplier<Expr> higher, TokenType... types) {
+        var expr = higher.get();
+
+        while (match(types)) {
+            var operator = previous();
+            var right = higher.get();
+            expr = new Binary(expr, operator, right);
+        }
+
+        return expr;
     }
 
     private Token consume(TokenType type, String message) {
