@@ -6,8 +6,11 @@ import com.github.ianflett.jlox.Expr.Binary;
 import java.util.List;
 import java.util.function.Supplier;
 
-/** Recursive decent parser that consumes tokens to produce abstract syntax tree. */
+/** Recursive decent parser consuming tokens to produce abstract syntax tree. */
 public class Parser {
+
+    /** Thrown when parsing error encountered. */
+    private static class ParseError extends RuntimeException {}
 
     /** List of tokens to process. */
     private final List<Token> tokens;
@@ -22,6 +25,19 @@ public class Parser {
      */
     Parser(List<Token> tokens) {
         this.tokens = tokens;
+    }
+
+    /**
+     * Parses {@link #tokens} into abstract syntax tree.
+     *
+     * @return Abstract syntax tree.
+     */
+    Expr parse() {
+        try {
+            return expression();
+        } catch (ParseError error) {
+            return null;
+        }
     }
 
     /**
@@ -101,7 +117,7 @@ public class Parser {
             return new Expr.Grouping(expr);
         }
 
-        throw new UnsupportedOperationException();
+        throw error(peek(), "Expect expression.");
     }
 
     /**
@@ -123,10 +139,6 @@ public class Parser {
         return expr;
     }
 
-    private Token consume(TokenType type, String message) {
-        throw new UnsupportedOperationException();
-    }
-
     /**
      * Whether current {@link Token} matches given {@link TokenType}s.
      *
@@ -143,6 +155,19 @@ public class Parser {
         }
 
         return false;
+    }
+
+    /**
+     * Tries consuming {@link Token} of expected {@link TokenType}.
+     *
+     * @param type Expected {@link TokenType}.
+     * @param message Description of error.
+     * @return {@link Token}, if found.
+     */
+    private Token consume(TokenType type, String message) {
+        if (check(type)) return advance();
+
+        throw error(peek(), message);
     }
 
     /**
@@ -192,5 +217,40 @@ public class Parser {
      */
     private Token previous() {
         return tokens.get(current - 1);
+    }
+
+    /**
+     * Registers parsing error.
+     *
+     * @param token Affected {@link Token}.
+     * @param message Description of error.
+     * @return {@link ParseError}
+     */
+    private ParseError error(Token token, String message) {
+        Lox.error(token, message);
+        return new ParseError();
+    }
+
+    /** Discard {@link Token}s until statement boundary. */
+    private void synchronize() {
+        advance();
+
+        while (!isAtEnd()) {
+            if (SEMICOLON == previous().type()) return;
+
+            switch (peek().type()) {
+                case CLASS:
+                case FUN:
+                case VAR:
+                case FOR:
+                case IF:
+                case WHILE:
+                case PRINT:
+                case RETURN:
+                    return;
+            }
+
+            advance();
+        }
     }
 }

@@ -82,11 +82,13 @@ public final class Lox {
 
         var scanner = new Scanner(source);
         var tokens = scanner.scanTokens();
+        var parser = new Parser(tokens);
+        var expression = parser.parse();
 
-        // For now, print tokens.
-        for (Token token : tokens) {
-            System.out.println(token);
-        }
+        // Stop on syntax error.
+        if (hadError) return;
+
+        System.out.println(new AstPrinter.Directory().print(expression));
     }
 
     /**
@@ -97,6 +99,19 @@ public final class Lox {
      */
     static void error(int line, String message) {
         report(line, "", message);
+    }
+
+    /**
+     * Reports processing error.
+     *
+     * @param token Affected {@link Token}.
+     * @param message Description of error.
+     */
+    static void error(Token token, String message) {
+        report(
+                token.line(),
+                TokenType.EOF == token.type() ? " at end" : " at '" + token.lexeme() + "'",
+                message);
     }
 
     /**
