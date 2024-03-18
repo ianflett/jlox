@@ -41,6 +41,31 @@ public class TokenHelper {
         return withLine(literal, DEFAULT_LINE + line);
     }
 
+    /**
+     * Gets {@link Token} {@link List} ending with implicit {@link TokenType#EOF}.
+     *
+     * @param literals Literals for tokens.
+     * @return {@link Token} {@link List}.
+     */
+    static List<Token> asList(String... literals) {
+        var tokens = new ArrayList<Token>(literals.length);
+        for (var tokenKey : literals) {
+            tokens.add(TOKENS.get(tokenKey));
+        }
+        tokens.add(TOKENS.get(EOF_LITERAL));
+        return tokens;
+    }
+
+    /**
+     * Gets {@link Token} array ending with implicit {@link TokenType#EOF}.
+     *
+     * @param literals Literals for tokens.
+     * @return {@link Token} array.
+     */
+    static Token[] asArray(String... literals) {
+        return asList(literals).toArray(new Token[0]);
+    }
+
     /** Stores pre-generated {@link Token}s for testing. */
     private static final Map<String, Token> TOKENS =
             generateTokens(
@@ -63,6 +88,22 @@ public class TokenHelper {
                     entry(">", GREATER),
                     entry(">=", GREATER_EQUAL),
                     entry("/", SLASH),
+                    entry("and", AND),
+                    entry("class", CLASS),
+                    entry("else", ELSE),
+                    entry("false", FALSE),
+                    entry("for", FOR),
+                    entry("fun", FUN),
+                    entry("if", IF),
+                    entry("nil", NIL),
+                    entry("or", OR),
+                    entry("print", PRINT),
+                    entry("return", RETURN),
+                    entry("super", SUPER),
+                    entry("this", THIS),
+                    entry("true", TRUE),
+                    entry("var", VAR),
+                    entry("while", WHILE),
                     entry("", EOF),
                     entry("1", NUMBER),
                     entry("2", NUMBER),

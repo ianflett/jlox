@@ -10,6 +10,7 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.Set;
 import java.util.stream.Stream;
+import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -37,7 +38,7 @@ public class ScannerTests {
      */
     @Test
     void scanTokens_emitsEof_whenSourceIsEmpty() {
-        assertThat(new Scanner("").scanTokens(), contains(TokenHelper.get(EOF_LITERAL)));
+        assert_scanTokens("", EMPTY_TOKENS);
     }
 
     /**
@@ -64,8 +65,7 @@ public class ScannerTests {
     @MethodSource("scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence_data")
     void scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence(
             String source, Token expected) {
-        assertThat(
-                new Scanner(source).scanTokens(), contains(expected, TokenHelper.get(EOF_LITERAL)));
+        assert_scanTokens(source, contains(expected, TokenHelper.get(EOF_LITERAL)));
     }
 
     /**
@@ -98,7 +98,7 @@ public class ScannerTests {
                 "// This is a // comment."
             })
     void scanTokens_emitsNothing_whenSingleComment(String source) {
-        assertThat(new Scanner(source).scanTokens(), contains(TokenHelper.get(EOF_LITERAL)));
+        assert_scanTokens(source, EMPTY_TOKENS);
     }
 
     /**
@@ -111,14 +111,11 @@ public class ScannerTests {
     @ParameterizedTest(name = "\"{0}\"")
     @MethodSource("scanTokens_emitsNothing_whenMultiComment_data")
     void scanTokens_emitsNothing_whenMultiComment(String source, int line) {
-        assertThat(
-                new Scanner(source).scanTokens(),
-                contains(TokenHelper.withLine(EOF_LITERAL, line)));
+        assert_scanTokens(source, contains(TokenHelper.withLine(EOF_LITERAL, line)));
     }
 
     /**
-     * Data source for {@link #scanTokens_emitsNothing_whenMultiComment(String, int)}
-     * scanTokens_emitsNothing_whenMultiComment()} tests.
+     * Data source for {@link #scanTokens_emitsNothing_whenMultiComment(String, int)} tests.
      *
      * @return Test argument data.
      */
@@ -140,7 +137,7 @@ public class ScannerTests {
     @ParameterizedTest(name = "\"{0}\"")
     @ValueSource(strings = {" ", "\r", "\t"})
     void scanTokens_emitsNothing_whenWhitespace(String source) {
-        assertThat(new Scanner(source).scanTokens(), contains(TokenHelper.get(EOF_LITERAL)));
+        assert_scanTokens(source, EMPTY_TOKENS);
     }
 
     /**
@@ -149,8 +146,7 @@ public class ScannerTests {
      */
     @Test
     void scanTokens_emitsNothingAndAdvancesLine_whenNewLine() {
-        assertThat(
-                new Scanner("\n").scanTokens(), contains(TokenHelper.adjustLine(EOF_LITERAL, 1)));
+        assert_scanTokens("\n", contains(TokenHelper.adjustLine(EOF_LITERAL, 1)));
     }
 
     /**
@@ -163,8 +159,8 @@ public class ScannerTests {
     @ParameterizedTest(name = "\"{0}\"")
     @MethodSource("scanTokens_emitsString_whenTextWithinQuotes_data")
     void scanTokens_emitsString_whenTextWithinQuotes(String source, int line) {
-        assertThat(
-                new Scanner(source).scanTokens(),
+        assert_scanTokens(
+                source,
                 contains(
                         new Token(STRING, source, source.substring(1, source.length() - 1), line),
                         TokenHelper.withLine(EOF_LITERAL, line)));
@@ -191,8 +187,8 @@ public class ScannerTests {
     @ParameterizedTest
     @ValueSource(strings = {" 1234", "12.34 ", "0.1234", "1234.0"})
     void scanTokens_emitsNumber_whenValidNumber(String source) {
-        assertThat(
-                new Scanner(source).scanTokens(),
+        assert_scanTokens(
+                source,
                 contains(
                         new Token(NUMBER, source.trim(), Double.parseDouble(source), 1),
                         TokenHelper.get(EOF_LITERAL)));
@@ -204,8 +200,8 @@ public class ScannerTests {
      */
     @Test
     void scanTokens_emitsCorrectTokens_whenNumberHasLeadingDot() {
-        assertThat(
-                new Scanner(".1234").scanTokens(),
+        assert_scanTokens(
+                ".1234",
                 contains(
                         TokenHelper.get("."),
                         new Token(NUMBER, "1234", 1234d, 1),
@@ -218,8 +214,8 @@ public class ScannerTests {
      */
     @Test
     void scanTokens_emitsCorrectTokens_whenNumberHasTrailingDot() {
-        assertThat(
-                new Scanner("1234.").scanTokens(),
+        assert_scanTokens(
+                "1234.",
                 contains(
                         new Token(NUMBER, "1234", 1234d, 1),
                         TokenHelper.get("."),
@@ -232,8 +228,8 @@ public class ScannerTests {
      */
     @Test
     void scanTokens_emitsCorrectTokens_whenNumberHasTooManyDots() {
-        assertThat(
-                new Scanner("1.23.4").scanTokens(),
+        assert_scanTokens(
+                "1.23.4",
                 contains(
                         new Token(NUMBER, "1.23", 1.23d, 1),
                         TokenHelper.get("."),
@@ -247,8 +243,8 @@ public class ScannerTests {
      */
     @Test
     void scanTokens_emitsCorrectTokens_whenNumberHasContiguousDots() {
-        assertThat(
-                new Scanner("12..34").scanTokens(),
+        assert_scanTokens(
+                "12..34",
                 contains(
                         new Token(NUMBER, "12", 12d, 1),
                         TokenHelper.get("."),
@@ -270,15 +266,7 @@ public class ScannerTests {
                 "super", "this", "true", "var", "while"
             })
     void scanTokens_emitsKeyword_whenValidKeyword(String source) {
-        assertThat(
-                new Scanner(source).scanTokens(),
-                contains(
-                        new Token(
-                                Enum.valueOf(TokenType.class, source.toUpperCase()),
-                                source,
-                                null,
-                                1),
-                        TokenHelper.get(EOF_LITERAL)));
+        assert_scanTokens(source, contains(TokenHelper.asArray(source)));
     }
 
     /**
@@ -290,8 +278,22 @@ public class ScannerTests {
     @ParameterizedTest
     @ValueSource(strings = {"rand", "outclassed", "form"})
     void scanTokens_emitsIdentifier_whenInvalidKeyword(String source) {
-        assertThat(
-                new Scanner(source).scanTokens(),
+        assert_scanTokens(
+                source,
                 contains(new Token(IDENTIFIER, source, null, 1), TokenHelper.get(EOF_LITERAL)));
     }
+
+    /**
+     * General assertion against {@link Scanner#scanTokens()}.
+     *
+     * @param source Source text to scan.
+     * @param matcher Expected matcher result.
+     */
+    private static void assert_scanTokens(
+            String source, Matcher<Iterable<? extends Token>> matcher) {
+        assertThat(new Scanner(source).scanTokens(), matcher);
+    }
+
+    /** Matcher for empty {@link Token} list. */
+    static Matcher<Iterable<? extends Token>> EMPTY_TOKENS = contains(TokenHelper.get(EOF_LITERAL));
 }
