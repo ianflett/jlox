@@ -1,8 +1,8 @@
 package com.github.ianflett.jlox;
 
+import static com.github.ianflett.jlox.TokenHelper.EOF_LITERAL;
 import static com.github.ianflett.jlox.TokenType.*;
-import static com.github.stefanbirkner.systemlambda.SystemLambda.*;
-import static java.util.Map.entry;
+import static com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemErrNormalized;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -37,7 +37,7 @@ public class ScannerTests {
      */
     @Test
     void scanTokens_emitsEof_whenSourceIsEmpty() {
-        assertThat(new Scanner("").scanTokens(), contains(EOF_TOKEN));
+        assertThat(new Scanner("").scanTokens(), contains(TokenHelper.get(EOF_LITERAL)));
     }
 
     /**
@@ -64,7 +64,8 @@ public class ScannerTests {
     @MethodSource("scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence_data")
     void scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence(
             String source, Token expected) {
-        assertThat(new Scanner(source).scanTokens(), contains(expected, EOF_TOKEN));
+        assertThat(
+                new Scanner(source).scanTokens(), contains(expected, TokenHelper.get(EOF_LITERAL)));
     }
 
     /**
@@ -76,27 +77,10 @@ public class ScannerTests {
     static Stream<Arguments>
             scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence_data() {
         return Set.of(
-                        entry("(", TokenType.LEFT_PAREN),
-                        entry(")", TokenType.RIGHT_PAREN),
-                        entry("{", TokenType.LEFT_BRACE),
-                        entry("}", TokenType.RIGHT_BRACE),
-                        entry(",", TokenType.COMMA),
-                        entry(".", TokenType.DOT),
-                        entry("-", TokenType.MINUS),
-                        entry("+", TokenType.PLUS),
-                        entry(";", TokenType.SEMICOLON),
-                        entry("*", TokenType.STAR),
-                        entry("!", TokenType.BANG),
-                        entry("!=", TokenType.BANG_EQUAL),
-                        entry("=", TokenType.EQUAL),
-                        entry("==", TokenType.EQUAL_EQUAL),
-                        entry("<", TokenType.LESS),
-                        entry("<=", TokenType.LESS_EQUAL),
-                        entry(">", TokenType.GREATER),
-                        entry(">=", TokenType.GREATER_EQUAL),
-                        entry("/", TokenType.SLASH))
+                        "(", ")", "{", "}", ",", ".", "-", "+", ";", "*", "!", "!=", "=", "==", "<",
+                        "<=", ">", ">=", "/")
                 .stream()
-                .map(i -> arguments(i.getKey(), new Token(i.getValue(), i.getKey(), null, 1)));
+                .map(i -> arguments(i, TokenHelper.get(i)));
     }
 
     /**
@@ -114,7 +98,7 @@ public class ScannerTests {
                 "// This is a // comment."
             })
     void scanTokens_emitsNothing_whenSingleComment(String source) {
-        assertThat(new Scanner(source).scanTokens(), contains(EOF_TOKEN));
+        assertThat(new Scanner(source).scanTokens(), contains(TokenHelper.get(EOF_LITERAL)));
     }
 
     /**
@@ -129,9 +113,7 @@ public class ScannerTests {
     void scanTokens_emitsNothing_whenMultiComment(String source, int line) {
         assertThat(
                 new Scanner(source).scanTokens(),
-                contains(
-                        new Token(
-                                EOF_TOKEN.type(), EOF_TOKEN.lexeme(), EOF_TOKEN.literal(), line)));
+                contains(TokenHelper.withLine(EOF_LITERAL, line)));
     }
 
     /**
@@ -158,7 +140,7 @@ public class ScannerTests {
     @ParameterizedTest(name = "\"{0}\"")
     @ValueSource(strings = {" ", "\r", "\t"})
     void scanTokens_emitsNothing_whenWhitespace(String source) {
-        assertThat(new Scanner(source).scanTokens(), contains(EOF_TOKEN));
+        assertThat(new Scanner(source).scanTokens(), contains(TokenHelper.get(EOF_LITERAL)));
     }
 
     /**
@@ -168,13 +150,7 @@ public class ScannerTests {
     @Test
     void scanTokens_emitsNothingAndAdvancesLine_whenNewLine() {
         assertThat(
-                new Scanner("\n").scanTokens(),
-                contains(
-                        new Token(
-                                EOF_TOKEN.type(),
-                                EOF_TOKEN.lexeme(),
-                                EOF_TOKEN.literal(),
-                                EOF_TOKEN.line() + 1)));
+                new Scanner("\n").scanTokens(), contains(TokenHelper.adjustLine(EOF_LITERAL, 1)));
     }
 
     /**
@@ -190,13 +166,8 @@ public class ScannerTests {
         assertThat(
                 new Scanner(source).scanTokens(),
                 contains(
-                        new Token(
-                                TokenType.STRING,
-                                source,
-                                source.substring(1, source.length() - 1),
-                                line),
-                        new Token(
-                                EOF_TOKEN.type(), EOF_TOKEN.lexeme(), EOF_TOKEN.literal(), line)));
+                        new Token(STRING, source, source.substring(1, source.length() - 1), line),
+                        TokenHelper.withLine(EOF_LITERAL, line)));
     }
 
     /**
@@ -223,8 +194,8 @@ public class ScannerTests {
         assertThat(
                 new Scanner(source).scanTokens(),
                 contains(
-                        new Token(TokenType.NUMBER, source.trim(), Double.parseDouble(source), 1),
-                        EOF_TOKEN));
+                        new Token(NUMBER, source.trim(), Double.parseDouble(source), 1),
+                        TokenHelper.get(EOF_LITERAL)));
     }
 
     /**
@@ -236,9 +207,9 @@ public class ScannerTests {
         assertThat(
                 new Scanner(".1234").scanTokens(),
                 contains(
-                        new Token(TokenType.DOT, ".", null, 1),
-                        new Token(TokenType.NUMBER, "1234", 1234d, 1),
-                        EOF_TOKEN));
+                        TokenHelper.get("."),
+                        new Token(NUMBER, "1234", 1234d, 1),
+                        TokenHelper.get(EOF_LITERAL)));
     }
 
     /**
@@ -250,9 +221,9 @@ public class ScannerTests {
         assertThat(
                 new Scanner("1234.").scanTokens(),
                 contains(
-                        new Token(TokenType.NUMBER, "1234", 1234d, 1),
-                        new Token(TokenType.DOT, ".", null, 1),
-                        EOF_TOKEN));
+                        new Token(NUMBER, "1234", 1234d, 1),
+                        TokenHelper.get("."),
+                        TokenHelper.get(EOF_LITERAL)));
     }
 
     /**
@@ -264,10 +235,10 @@ public class ScannerTests {
         assertThat(
                 new Scanner("1.23.4").scanTokens(),
                 contains(
-                        new Token(TokenType.NUMBER, "1.23", 1.23d, 1),
-                        new Token(TokenType.DOT, ".", null, 1),
-                        new Token(TokenType.NUMBER, "4", 4d, 1),
-                        EOF_TOKEN));
+                        new Token(NUMBER, "1.23", 1.23d, 1),
+                        TokenHelper.get("."),
+                        new Token(NUMBER, "4", 4d, 1),
+                        TokenHelper.get(EOF_LITERAL)));
     }
 
     /**
@@ -279,11 +250,11 @@ public class ScannerTests {
         assertThat(
                 new Scanner("12..34").scanTokens(),
                 contains(
-                        new Token(TokenType.NUMBER, "12", 12d, 1),
-                        new Token(TokenType.DOT, ".", null, 1),
-                        new Token(TokenType.DOT, ".", null, 1),
-                        new Token(TokenType.NUMBER, "34", 34d, 1),
-                        EOF_TOKEN));
+                        new Token(NUMBER, "12", 12d, 1),
+                        TokenHelper.get("."),
+                        TokenHelper.get("."),
+                        new Token(NUMBER, "34", 34d, 1),
+                        TokenHelper.get(EOF_LITERAL)));
     }
 
     /**
@@ -307,7 +278,7 @@ public class ScannerTests {
                                 source,
                                 null,
                                 1),
-                        EOF_TOKEN));
+                        TokenHelper.get(EOF_LITERAL)));
     }
 
     /**
@@ -321,9 +292,6 @@ public class ScannerTests {
     void scanTokens_emitsIdentifier_whenInvalidKeyword(String source) {
         assertThat(
                 new Scanner(source).scanTokens(),
-                contains(new Token(IDENTIFIER, source, null, 1), EOF_TOKEN));
+                contains(new Token(IDENTIFIER, source, null, 1), TokenHelper.get(EOF_LITERAL)));
     }
-
-    /** End of file token. */
-    static final Token EOF_TOKEN = new Token(TokenType.EOF, "", null, 1);
 }
