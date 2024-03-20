@@ -43,14 +43,31 @@ public class Parser {
     /**
      * Parses expression grammar rule.
      *
-     * @return {@link Expr}ession or {@link #equality()}.
+     * <pre>{@link #expression()} -> {@link #sequence()}</pre>
+     *
+     * @return {@link Expr}ession or {@link #sequence()}.
      */
     private Expr expression() {
-        return equality();
+        return sequence();
+    }
+
+    /**
+     * Parses a sequence point grammar rule.
+     *
+     * <pre>{@link #sequence()} -> {@link #equality()} ( "," {@link #equality()} )*</pre>
+     *
+     * @return {@link Expr}ession or {@link #equality()}.
+     */
+    private Expr sequence() {
+        return parseBinary(this::equality, COMMA);
     }
 
     /**
      * Parses equality grammar rule.
+     *
+     * <pre>
+     * {@link #equality()} -> {@link #comparison()} ( ( "!=" | "==" ) ) {@link #comparison()} )*
+     * </pre>
      *
      * @return Equality {@link Expr}ession or {@link #comparison()}.
      */
@@ -61,6 +78,10 @@ public class Parser {
     /**
      * Parses comparison grammar rule.
      *
+     * <pre>
+     * {@link #comparison()} -> {@link #term()} ( ( ">" | ">=" | "<" | "<=" ) ) {@link #term()} )*
+     * </pre>
+     *
      * @return Comparison {@link Expr}ession or {@link #term()}.
      */
     private Expr comparison() {
@@ -69,6 +90,8 @@ public class Parser {
 
     /**
      * Parses term grammar rule.
+     *
+     * <pre>{@link #term()} -> {@link #factor()} ( ( "-" | "+" ) ) {@link #factor()} )*</pre>
      *
      * @return Term {@link Expr}ession or {@link #factor()}.
      */
@@ -79,6 +102,8 @@ public class Parser {
     /**
      * Parses factor grammar rule.
      *
+     * <pre>{@link #factor()} -> {@link #unary()} ( ( "/" | "*" ) ) {@link #unary()} )*</pre>
+     *
      * @return Factor {@link Expr}ession or {@link #unary()}.
      */
     private Expr factor() {
@@ -87,6 +112,8 @@ public class Parser {
 
     /**
      * Parses unary grammar rule.
+     *
+     * <pre>{@link #unary()} -> ( "!" | "-" ) {@link #unary()} | {@link #primary()}</pre>
      *
      * @return Unary {@link Expr}ession or {@link #primary()}.
      */
@@ -103,6 +130,10 @@ public class Parser {
     /**
      * Parses primary grammar rule.
      *
+     * <pre>
+     * {@link #primary()} -> NUMBER | STRING | "true" | "false" | "nil" | "(" {@link #sequence()} ")"
+     * </pre>
+     *
      * @return {@link Expr.Literal} or {@link Expr.Grouping}.
      */
     private Expr primary() {
@@ -112,7 +143,7 @@ public class Parser {
         if (match(NUMBER, STRING)) return new Expr.Literal(previous().literal());
 
         if (match(LEFT_PAREN)) {
-            var expr = expression();
+            var expr = sequence();
             consume(RIGHT_PAREN, "Expect ')' after expression.");
             return new Expr.Grouping(expr);
         }

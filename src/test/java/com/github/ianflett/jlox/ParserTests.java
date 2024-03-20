@@ -1,5 +1,6 @@
 package com.github.ianflett.jlox;
 
+import static com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemErrNormalized;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -18,9 +19,13 @@ public class ParserTests {
 
     /** Tests {@link Parser#parse()} returns {@code null} when {@link Token} unrecognised. */
     @Test
-    void parse_returnsNull_whenTokenUnrecognised() {
+    void parse_returnsNull_whenTokenUnrecognised() throws Exception {
         var tokens = TokenHelper.asList("}");
-        assert_parse(tokens, is(equalTo(null)));
+        final Expr[] actual = {null};
+        var error = tapSystemErrNormalized(() -> actual[0] = new Parser(tokens).parse());
+
+        assertThat(actual[0], is(equalTo(null)));
+        assertThat(error, is(equalTo("[line 1] Error  at '}': Expect expression.\n")));
     }
 
     /**
@@ -113,7 +118,11 @@ public class ParserTests {
      * @return Test argument data.
      */
     public static Stream<Arguments> parse_binaryGrammarsOfDifferingPrecedence() {
-        return Stream.of(arguments("*", "+"), arguments("+", "<"), arguments("<", "=="));
+        return Stream.of(
+                arguments("*", "+"),
+                arguments("+", "<"),
+                arguments("<", "=="),
+                arguments("==", ","));
     }
 
     /**
