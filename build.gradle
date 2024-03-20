@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.github.ianflett.jlox'
-version = '0.6.0.6'
+version = '0.6.0.7'
 
 apply from: "$rootDir/gradle/details.gradle"
 apply from: "$rootDir/gradle/generate-ast.gradle"

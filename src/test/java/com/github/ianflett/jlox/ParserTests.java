@@ -71,7 +71,7 @@ public class ParserTests {
      * @param lower Expected lower precedence operator.
      */
     @ParameterizedTest
-    @MethodSource
+    @MethodSource("parse_binaryGrammarsOfDifferingPrecedence")
     void parse_binaryGrammarsDifferInPrecedence_givenGrammarsAtDifferingLevels(
             String higher, String lower) {
         assert_parse_leftBinaryHasHigherPrecedence(higher, lower);
@@ -79,14 +79,40 @@ public class ParserTests {
     }
 
     /**
+     * Tests {@link Parser#parse()} generates the same {@link Expr}ession when operators of
+     * differing precedence are separated by parentheses.
+     *
+     * @param higher Expected higher precedence operator.
+     * @param lower Expected lower precedence operator.
+     */
+    @ParameterizedTest
+    @MethodSource("parse_binaryGrammarsOfDifferingPrecedence")
+    void parse_groupingChangesPrecedence_given(String higher, String lower) {
+        var tokens = TokenHelper.asList("1", higher, "(", "2", lower, "3", ")");
+
+        // 1 higher (2 lower 3)
+        var expected =
+                new Expr.Binary(
+                        new Expr.Literal(1d),
+                        TokenHelper.get(higher),
+                        new Expr.Grouping(
+                                new Expr.Binary(
+                                        new Expr.Literal(2d),
+                                        TokenHelper.get(lower),
+                                        new Expr.Literal(3d))));
+
+        assert_parse(tokens, is(equalTo(expected)));
+    }
+
+    /**
      * Data source for {@link
-     * #parse_binaryGrammarsDifferInPrecedence_givenGrammarsAtDifferingLevels(String, String)}
-     * tests.
+     * #parse_binaryGrammarsDifferInPrecedence_givenGrammarsAtDifferingLevels(String, String)} and
+     * {@link #parse_binaryGrammarsDifferInPrecedence_givenGrammarsAtDifferingLevels(String,
+     * String)} tests.
      *
      * @return Test argument data.
      */
-    public static Stream<Arguments>
-            parse_binaryGrammarsDifferInPrecedence_givenGrammarsAtDifferingLevels() {
+    public static Stream<Arguments> parse_binaryGrammarsOfDifferingPrecedence() {
         return Stream.of(arguments("*", "+"), arguments("+", "<"), arguments("<", "=="));
     }
 
@@ -116,10 +142,10 @@ public class ParserTests {
         var tokens = TokenHelper.asList("-", "1", "*", "2");
 
         var expected =
-            new Expr.Binary(
-                new Expr.Unary(TokenHelper.get("-"), new Expr.Literal(1d)),
-                TokenHelper.get("*"),
-                new Expr.Literal(2d));
+                new Expr.Binary(
+                        new Expr.Unary(TokenHelper.get("-"), new Expr.Literal(1d)),
+                        TokenHelper.get("*"),
+                        new Expr.Literal(2d));
 
         assert_parse(tokens, is(equalTo(expected)));
     }
