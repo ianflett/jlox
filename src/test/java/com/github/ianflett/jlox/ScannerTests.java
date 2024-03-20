@@ -62,7 +62,7 @@ public class ScannerTests {
      * @param expected Expected {@link Token} emitted.
      */
     @ParameterizedTest(name = "\"{0}\" = <{1}>")
-    @MethodSource("scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence_data")
+    @MethodSource
     void scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence(
             String source, Token expected) {
         assert_scanTokens(source, contains(expected, TokenHelper.get(EOF_LITERAL)));
@@ -75,7 +75,7 @@ public class ScannerTests {
      * @return Test argument data.
      */
     static Stream<Arguments>
-            scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence_data() {
+            scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence() {
         return Set.of(
                         "(", ")", "{", "}", ",", ".", "-", "+", ";", "*", "!", "!=", "=", "==", "<",
                         "<=", ">", ">=", "/")
@@ -109,7 +109,7 @@ public class ScannerTests {
      * @param line Expected line number.
      */
     @ParameterizedTest(name = "\"{0}\"")
-    @MethodSource("scanTokens_emitsNothing_whenMultiComment_data")
+    @MethodSource
     void scanTokens_emitsNothing_whenMultiComment(String source, int line) {
         assert_scanTokens(source, contains(TokenHelper.withLine(EOF_LITERAL, line)));
     }
@@ -119,7 +119,7 @@ public class ScannerTests {
      *
      * @return Test argument data.
      */
-    static Stream<Arguments> scanTokens_emitsNothing_whenMultiComment_data() {
+    static Stream<Arguments> scanTokens_emitsNothing_whenMultiComment() {
         return Stream.of(
                 arguments("/**/", 1),
                 arguments("/* This is a comment. */", 1),
@@ -157,7 +157,7 @@ public class ScannerTests {
      * @param line Expected line number.
      */
     @ParameterizedTest(name = "\"{0}\"")
-    @MethodSource("scanTokens_emitsString_whenTextWithinQuotes_data")
+    @MethodSource
     void scanTokens_emitsString_whenTextWithinQuotes(String source, int line) {
         assert_scanTokens(
                 source,
@@ -171,7 +171,7 @@ public class ScannerTests {
      *
      * @return Test argument data.
      */
-    static Stream<Arguments> scanTokens_emitsString_whenTextWithinQuotes_data() {
+    static Stream<Arguments> scanTokens_emitsString_whenTextWithinQuotes() {
         return Stream.of(
                 arguments("\"\"", 1),
                 arguments("\"This is a string.\"", 1),

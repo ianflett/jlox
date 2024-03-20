@@ -49,7 +49,7 @@ class TokenTests {
      * @param line Line number location.
      */
     @ParameterizedTest(name = "new Token({0}, \"{1}\", {2}, {3}).toString() = \"{0} {1} {2}\"")
-    @MethodSource("toString_reportsTokenTypeLexemeAndLiteral_data")
+    @MethodSource
     void toString_reportsTokenTypeLexemeAndLiteral(
             TokenType tokenType, String lexeme, Object literal, int line) {
         assertThat(
@@ -63,7 +63,7 @@ class TokenTests {
      *
      * @return Test argument data.
      */
-    static Stream<Arguments> toString_reportsTokenTypeLexemeAndLiteral_data() {
+    static Stream<Arguments> toString_reportsTokenTypeLexemeAndLiteral() {
         return Stream.of(
                 arguments(TokenType.LEFT_PAREN, "", null, 0),
                 arguments(TokenType.RIGHT_PAREN, "", null, 0),

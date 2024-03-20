@@ -104,7 +104,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          * Tests {@link Lisp#print(Expr)} produces correct output for example abstract syntax tree.
          */
         @ParameterizedTest(name = "\"{1}\"")
-        @MethodSource("print_producesCorrectOutput_data")
+        @MethodSource
         protected void print_producesCorrectOutput(Expr expression, String expected) {
             assert_print_producesCorrectOutput(expression, expected);
         }
@@ -114,7 +114,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          *
          * @return Test argument data.
          */
-        static Stream<Arguments> print_producesCorrectOutput_data() {
+        static Stream<Arguments> print_producesCorrectOutput() {
             return Stream.of(
                     arguments(
                             assert_print_producesCorrectOutput_expression1,
@@ -138,7 +138,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
 
         /** Tests {@link AstPrinter#visitLiteralExpr(Expr.Literal)} produces correct output. */
         @ParameterizedTest
-        @MethodSource("visitLiteralExpr_producesCorrectOutput_data")
+        @MethodSource
         void visitLiteralExpr_producesCorrectOutput(Expr.Literal expression, String expected) {
             assertThat(GetPrinter().visitLiteralExpr(expression), is(equalTo(expected)));
         }
@@ -149,7 +149,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          *
          * @return Test argument data.
          */
-        static Stream<Arguments> visitLiteralExpr_producesCorrectOutput_data() {
+        static Stream<Arguments> visitLiteralExpr_producesCorrectOutput() {
             return Stream.of(
                     arguments(new Expr.Literal(1), "1"), arguments(new Expr.Literal(null), "nil"));
         }
@@ -179,7 +179,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          * abstract syntax tree.
          */
         @ParameterizedTest(name = "\"{1}\"")
-        @MethodSource("print_producesCorrectOutput_data")
+        @MethodSource
         protected void print_producesCorrectOutput(Expr expression, String expected) {
             assert_print_producesCorrectOutput(expression, expected);
         }
@@ -189,7 +189,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          *
          * @return Test argument data.
          */
-        static Stream<Arguments> print_producesCorrectOutput_data() {
+        static Stream<Arguments> print_producesCorrectOutput() {
             return Stream.of(
                     arguments(assert_print_producesCorrectOutput_expression1, "123 - 45.67 *"),
                     arguments(assert_print_producesCorrectOutput_expression2, "1 2 + 4 3 - *"));
@@ -212,7 +212,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
 
         /** Tests {@link AstPrinter#visitLiteralExpr(Expr.Literal)} produces correct output. */
         @ParameterizedTest
-        @MethodSource("visitLiteralExpr_producesCorrectOutput_data")
+        @MethodSource
         void visitLiteralExpr_producesCorrectOutput(Expr.Literal expression, String expected) {
             assertThat(GetPrinter().visitLiteralExpr(expression), is(equalTo(expected)));
         }
@@ -223,7 +223,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          *
          * @return Test argument data.
          */
-        static Stream<Arguments> visitLiteralExpr_producesCorrectOutput_data() {
+        static Stream<Arguments> visitLiteralExpr_producesCorrectOutput() {
             return Stream.of(
                     arguments(new Expr.Literal(1), "1"), arguments(new Expr.Literal(null), "nil"));
         }
@@ -255,7 +255,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          * tree.
          */
         @ParameterizedTest(name = "\"{1}\"")
-        @MethodSource("print_producesCorrectOutput_data")
+        @MethodSource
         protected void print_producesCorrectOutput(Expr expression, String expected) {
             assert_print_producesCorrectOutput(expression, expected);
         }
@@ -265,7 +265,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          *
          * @return Test argument data.
          */
-        static Stream<Arguments> print_producesCorrectOutput_data() {
+        static Stream<Arguments> print_producesCorrectOutput() {
             return Stream.of(
                     arguments(
                             assert_print_producesCorrectOutput_expression1,
@@ -291,7 +291,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
 
         /** Tests {@link AstPrinter#visitLiteralExpr(Expr.Literal)} produces correct output. */
         @ParameterizedTest
-        @MethodSource("visitLiteralExpr_producesCorrectOutput_data")
+        @MethodSource
         void visitLiteralExpr_producesCorrectOutput(Expr.Literal expression, String expected) {
             assertThat(GetPrinter().visitLiteralExpr(expression), is(equalTo(expected)));
         }
@@ -302,7 +302,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          *
          * @return Test argument data.
          */
-        static Stream<Arguments> visitLiteralExpr_producesCorrectOutput_data() {
+        static Stream<Arguments> visitLiteralExpr_producesCorrectOutput() {
             return Stream.of(
                     arguments(new Expr.Literal(1), String.format("1%n")),
                     arguments(new Expr.Literal(null), String.format("nil%n")));
