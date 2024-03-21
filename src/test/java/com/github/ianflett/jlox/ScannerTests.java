@@ -77,8 +77,8 @@ public class ScannerTests {
     static Stream<Arguments>
             scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence() {
         return Set.of(
-                        "(", ")", "{", "}", ",", ".", "-", "+", ";", "*", "!", "!=", "=", "==", "<",
-                        "<=", ">", ">=", "/")
+                        "(", ")", "{", "}", ":", ",", ".", "-", "+", "?", ";", "*", "!", "!=", "=",
+                        "==", "<", "<=", ">", ">=", "/")
                 .stream()
                 .map(i -> arguments(i, TokenHelper.get(i)));
     }

@@ -58,6 +58,12 @@ abstract class AstPrinter implements Expr.Visitor<String> {
 
         /** {@inheritDoc} */
         @Override
+        public String visitConditionalExpr(Expr.Conditional expr) {
+            return parenthesize("?:", expr.condition, expr.thenBranch, expr.elseBranch);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public String visitGroupingExpr(Expr.Grouping expr) {
             return parenthesize("group", expr.expression);
         }
@@ -103,6 +109,12 @@ abstract class AstPrinter implements Expr.Visitor<String> {
         @Override
         public String visitBinaryExpr(Expr.Binary expr) {
             return reverseNotation(expr.operator.lexeme(), expr.left, expr.right);
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String visitConditionalExpr(Expr.Conditional expr) {
+            return reverseNotation("?:", expr.condition, expr.thenBranch, expr.elseBranch);
         }
 
         /** {@inheritDoc} */
@@ -160,6 +172,19 @@ abstract class AstPrinter implements Expr.Visitor<String> {
                     expr.operator.lexeme(),
                     processChildNode("├", expr.left),
                     processChildNode("└", expr.right));
+        }
+
+        /** {@inheritDoc} */
+        @Override
+        public String visitConditionalExpr(Expr.Conditional expr) {
+
+            return String.format(
+                    "%s%s%n%s%s%s",
+                    processIndent(true),
+                    "?:",
+                    processChildNode("├", expr.condition),
+                    processChildNode("├", expr.thenBranch),
+                    processChildNode("└", expr.elseBranch));
         }
 
         /** {@inheritDoc} */

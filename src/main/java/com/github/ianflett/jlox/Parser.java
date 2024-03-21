@@ -2,7 +2,6 @@ package com.github.ianflett.jlox;
 
 import static com.github.ianflett.jlox.TokenType.*;
 
-import com.github.ianflett.jlox.Expr.Binary;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -54,12 +53,34 @@ public class Parser {
     /**
      * Parses a sequence point grammar rule.
      *
-     * <pre>{@link #sequence()} -> {@link #equality()} ( "," {@link #equality()} )*</pre>
+     * <pre>{@link #sequence()} -> {@link #conditional()} ( "," {@link #conditional()} )*</pre>
      *
-     * @return {@link Expr}ession or {@link #equality()}.
+     * @return {@link Expr}ession or {@link #conditional()}.
      */
     private Expr sequence() {
-        return parseBinary(this::equality, COMMA);
+        return parseBinary(this::conditional, COMMA);
+    }
+
+    /**
+     * Parses a conditional grammar rule.
+     *
+     * <pre>
+     * {@link #conditional()} -> {@link #equality()} ( "?" {@link #expression()} ":" {@link #conditional()} )?
+     * </pre>
+     *
+     * @return {@link Expr}ession or {@link #expression()}.
+     */
+    private Expr conditional() {
+        var expr = equality();
+
+        if (match(QUESTION)) {
+            var thenBranch = expression();
+            consume(COLON, "Expect ':' after then branch of conditional expression.");
+            var elseBranch = conditional();
+            expr = new Expr.Conditional(expr, thenBranch, elseBranch);
+        }
+
+        return expr;
     }
 
     /**
@@ -152,11 +173,11 @@ public class Parser {
     }
 
     /**
-     * Parses a {@link Binary} grammar rule.
+     * Parses a {@link Expr.Binary} grammar rule.
      *
      * @param higher Next higher {@link Expr} parser.
      * @param types {@link TokenType}s to check for.
-     * @return {@link Binary} expression or higher.
+     * @return {@link Expr.Binary} expression or higher.
      */
     private Expr parseBinary(Supplier<Expr> higher, TokenType... types) {
         var expr = higher.get();
@@ -164,7 +185,7 @@ public class Parser {
         while (match(types)) {
             var operator = previous();
             var right = higher.get();
-            expr = new Binary(expr, operator, right);
+            expr = new Expr.Binary(expr, operator, right);
         }
 
         return expr;

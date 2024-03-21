@@ -69,6 +69,52 @@ public class ParserTests {
     }
 
     /**
+     * Tests {@link Parser#parse()} generates {@link Expr}ession where conditional has higher precedence
+     * than sequence. However, note an implicit grouping for the middle term.
+     */
+    @Test
+    void parse_conditionalHasHigherPrecedenceThanSequence_givenSequenceAndConditional() {
+        var tokens = TokenHelper.asList("1", ",", "2", "?", "3", ",", "1", ":", "2", ",", "3");
+
+        var expected =
+                new Expr.Binary(
+                        new Expr.Binary(
+                                new Expr.Literal(1d),
+                                TokenHelper.get(","),
+                                new Expr.Conditional(
+                                        new Expr.Literal(2d),
+                                        new Expr.Binary(
+                                                new Expr.Literal(3d),
+                                                TokenHelper.get(","),
+                                                new Expr.Literal(1d)),
+                                        new Expr.Literal(2d))),
+                        TokenHelper.get(","),
+                        new Expr.Literal(3d));
+
+        assert_parse(tokens, is(equalTo(expected)));
+    }
+
+    /**
+     * Tests {@link Parser#parse()} generates {@link Expr}ession where equality has higher
+     * precedence than conditional.
+     */
+    @Test
+    void parse_equalityHasHigherPrecedenceThanConditional_givenConditionalAndEquality() {
+        var tokens = TokenHelper.asList("1", "==", "2", "?", "3", "==", "2", ":", "1", "==", "3");
+
+        var expected =
+                new Expr.Conditional(
+                        new Expr.Binary(
+                                new Expr.Literal(1d), TokenHelper.get("=="), new Expr.Literal(2d)),
+                        new Expr.Binary(
+                                new Expr.Literal(3d), TokenHelper.get("=="), new Expr.Literal(2d)),
+                        new Expr.Binary(
+                                new Expr.Literal(1d), TokenHelper.get("=="), new Expr.Literal(3d)));
+
+        assert_parse(tokens, is(equalTo(expected)));
+    }
+
+    /**
      * Tests {@link Parser#parse()} generates {@link Expr}ession where {@code higher} operator has
      * precedence over {@code lower} operator.
      *
@@ -92,7 +138,8 @@ public class ParserTests {
      */
     @ParameterizedTest
     @MethodSource("parse_binaryGrammarsOfDifferingPrecedence")
-    void parse_groupingChangesPrecedence_given(String higher, String lower) {
+    void parse_groupingChangesPrecedence_whenLowerPrecedenceGrammarIsWithinParentheses(
+            String higher, String lower) {
         var tokens = TokenHelper.asList("1", higher, "(", "2", lower, "3", ")");
 
         // 1 higher (2 lower 3)
@@ -130,7 +177,7 @@ public class ParserTests {
      * a unary operator, the unary operator has higher precedence.
      */
     @Test
-    void parse_factorHasHigherPrecedenceThanUnary_givenFactorThenUnary() {
+    void parse_unaryHasHigherPrecedenceThanFactor_givenFactorThenUnary() {
         var tokens = TokenHelper.asList("1", "*", "-", "2");
 
         var expected =
@@ -147,7 +194,7 @@ public class ParserTests {
      * a factor operator, the unary operator has higher precedence.
      */
     @Test
-    void parse_factorHasHigherPrecedenceThanUnary_givenUnaryThenFactor() {
+    void parse_unaryHasHigherPrecedenceThanFactor_givenUnaryThenFactor() {
         var tokens = TokenHelper.asList("-", "1", "*", "2");
 
         var expected =

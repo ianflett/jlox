@@ -96,6 +96,9 @@ class Scanner {
             case '}':
                 addToken(RIGHT_BRACE);
                 break;
+            case ':':
+                addToken(COLON);
+                break;
             case ',':
                 addToken(COMMA);
                 break;
@@ -107,6 +110,9 @@ class Scanner {
                 break;
             case '+':
                 addToken(PLUS);
+                break;
+            case '?':
+                addToken(QUESTION);
                 break;
             case ';':
                 addToken(SEMICOLON);
