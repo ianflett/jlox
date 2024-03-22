@@ -110,7 +110,7 @@ public final class Lox {
     static void error(Token token, String message) {
         report(
                 token.line(),
-                TokenType.EOF == token.type() ? " at end" : " at '" + token.lexeme() + "'",
+                TokenType.EOF == token.type() ? "at end" : "at '" + token.lexeme() + "'",
                 message);
     }
 

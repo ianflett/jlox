@@ -134,7 +134,10 @@ public class Parser {
     /**
      * Parses unary grammar rule.
      *
-     * <pre>{@link #unary()} -> ( "!" | "-" ) {@link #unary()} | {@link #primary()}</pre>
+     * <pre>
+     * {@link #unary()} -> ( "!" | "-" ) {@link #unary()}
+     *     | {@link #primary()}
+     * </pre>
      *
      * @return Unary {@link Expr}ession or {@link #primary()}.
      */
@@ -152,7 +155,9 @@ public class Parser {
      * Parses primary grammar rule.
      *
      * <pre>
-     * {@link #primary()} -> NUMBER | STRING | "true" | "false" | "nil" | "(" {@link #sequence()} ")"
+     * {@link #primary()} -> NUMBER | STRING
+     *     | "true" | "false" | "nil"
+     *     | "(" {@link #sequence()} ")" | {@link #invalid()}
      * </pre>
      *
      * @return {@link Expr.Literal} or {@link Expr.Grouping}.
@@ -169,7 +174,47 @@ public class Parser {
             return new Expr.Grouping(expr);
         }
 
+        return invalid();
+    }
+
+    /**
+     * Parses invalid error productions.
+     *
+     * <pre>
+     * {@link #invalid()} -> ( ( "!=" | "==" ) {@link #equality()} )
+     *     | ( ( ">" | ">=" | "<" | "<=" ) {@link #comparison()} )
+     *     | ( "+" {@link #term()} )
+     *     | ( ( "/" | "*" ) {@link #factor()} )
+     * </pre>
+     *
+     * @return {@code null}.
+     */
+    private Expr invalid() {
+
+        if (missingLeftTerm("equality", this::equality, BANG_EQUAL, EQUAL_EQUAL)
+                || missingLeftTerm(
+                        "comparison", this::comparison, GREATER, GREATER_EQUAL, LESS, LESS_EQUAL)
+                || missingLeftTerm("term", this::term, PLUS)
+                || missingLeftTerm("factor", this::factor, SLASH, STAR)) return null;
+
         throw error(peek(), "Expect expression.");
+    }
+
+    /**
+     * Checks whether binary expression is missing left term.
+     *
+     * @param missing What's missing.
+     * @param orElse How to evaluate right term.
+     * @param tokens {@link Token}s to check for.
+     * @return {@code true} if found; {@code false} otherwise.
+     */
+    boolean missingLeftTerm(String missing, Supplier<Expr> orElse, TokenType... tokens) {
+        if (match(tokens)) {
+            error(previous(), String.format("Missing left hand operand for %s.", missing));
+            orElse.get();
+            return true;
+        }
+        return false;
     }
 
     /**

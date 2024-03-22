@@ -2,8 +2,7 @@ package com.github.ianflett.jlox;
 
 import static com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemErrNormalized;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.List;
@@ -20,12 +19,7 @@ public class ParserTests {
     /** Tests {@link Parser#parse()} returns {@code null} when {@link Token} unrecognised. */
     @Test
     void parse_returnsNull_whenTokenUnrecognised() throws Exception {
-        var tokens = TokenHelper.asList("}");
-        final Expr[] actual = {null};
-        var error = tapSystemErrNormalized(() -> actual[0] = new Parser(tokens).parse());
-
-        assertThat(actual[0], is(equalTo(null)));
-        assertThat(error, is(equalTo("[line 1] Error  at '}': Expect expression.\n")));
+        assert_parseError(TokenHelper.asList("}"), "[line 1] Error at '}': Expect expression.");
     }
 
     /**
@@ -69,8 +63,8 @@ public class ParserTests {
     }
 
     /**
-     * Tests {@link Parser#parse()} generates {@link Expr}ession where conditional has higher precedence
-     * than sequence. However, note an implicit grouping for the middle term.
+     * Tests {@link Parser#parse()} generates {@link Expr}ession where conditional has higher
+     * precedence than sequence. However, note an implicit grouping for the middle term.
      */
     @Test
     void parse_conditionalHasHigherPrecedenceThanSequence_givenSequenceAndConditional() {
@@ -170,6 +164,38 @@ public class ParserTests {
                 arguments("+", "<"),
                 arguments("<", "=="),
                 arguments("==", ","));
+    }
+
+    /**
+     * Tests {@link Parser#parse()} generates an error given binary operator missing left operand.
+     *
+     * @param token Binary token.
+     * @param type Token type.
+     * @throws Exception Unable to read from standard error.
+     */
+    @ParameterizedTest
+    @MethodSource
+    void parse_producesError_whenLeftOperandMissingFromBinaryExpression(String token, String type)
+            throws Exception {
+        assert_parseError(
+                TokenHelper.asList(token, "1", token, "2"),
+                String.format(
+                        "[line 1] Error at '%s': Missing left hand operand for %s.", token, type));
+    }
+
+    /**
+     * Data source for {@link
+     * #parse_producesError_whenLeftOperandMissingFromBinaryExpression(String, String)} tests.
+     *
+     * @return Test argument data.
+     */
+    public static Stream<Arguments>
+            parse_producesError_whenLeftOperandMissingFromBinaryExpression() {
+        return Stream.of(
+                arguments("==", "equality"),
+                arguments("<", "comparison"),
+                arguments("+", "term"),
+                arguments("*", "factor"));
     }
 
     /**
@@ -274,5 +300,21 @@ public class ParserTests {
                         new Expr.Unary(TokenHelper.get(right), new Expr.Literal(1d)));
 
         assert_parse(tokens, is(equalTo(expected)));
+    }
+
+    /**
+     * Asserts given tokens produces an error.
+     *
+     * @param tokens List of {@link Token}s.
+     * @param expectedErrorMessage Expected error message.
+     * @throws Exception Unable to read from standard error.
+     */
+    static void assert_parseError(List<Token> tokens, String expectedErrorMessage)
+            throws Exception {
+        final Expr[] actual = {null};
+        var error = tapSystemErrNormalized(() -> actual[0] = new Parser(tokens).parse());
+
+        assertThat(actual[0], is(equalTo(null)));
+        assertThat(error, is(equalTo(expectedErrorMessage + "\n")));
     }
 }
