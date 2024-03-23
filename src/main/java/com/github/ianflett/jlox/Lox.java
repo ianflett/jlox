@@ -13,8 +13,14 @@ public final class Lox {
     /** Represents single command line argument. */
     private static final int SINGLE_ARG = 1;
 
+    /** {@link Interpreter} to use for code. */
+    private static final Interpreter interpreter = new Interpreter();
+
     /** Stores whether error encountered during processing. */
     private static boolean hadError = false;
+
+    /** Stores whether error encountered during runtime. */
+    private static boolean hadRuntimeError = false;
 
     /**
      * Main entry point for interpreter.
@@ -51,6 +57,7 @@ public final class Lox {
 
         // Indicate error and exit.
         if (hadError) exit(PosixExits.DATAERR);
+        if (hadRuntimeError) exit(PosixExits.SOFTWARE);
     }
 
     /**
@@ -88,7 +95,7 @@ public final class Lox {
         // Stop on syntax error.
         if (hadError) return;
 
-        System.out.println(new AstPrinter.Directory().print(expression));
+        interpreter.interpret(expression);
     }
 
     /**
@@ -112,6 +119,16 @@ public final class Lox {
                 token.line(),
                 TokenType.EOF == token.type() ? "at end" : "at '" + token.lexeme() + "'",
                 message);
+    }
+
+    /**
+     * Reports runtime error.
+     *
+     * @param error Error details.
+     */
+    static void runtimeError(RuntimeError error) {
+        System.err.println(error.getMessage() + "\n[line " + error.token.line() + "]");
+        hadRuntimeError = true;
     }
 
     /**

@@ -18,7 +18,7 @@ public class Parser {
     private int current = 0;
 
     /**
-     * Constructs parser.
+     * Constructs {@link Parser}.
      *
      * @param tokens Tokens to parse.
      */
