@@ -23,7 +23,7 @@ class InterpreterTest {
     // region a == b
 
     /**
-     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} equals produces correct result given
+     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} equals produces expected result given
      * two numbers.
      *
      * @param left Left operand.
@@ -33,12 +33,13 @@ class InterpreterTest {
     @ParameterizedTest
     @MethodSource
     void visitBinaryExpr_equalsProducesExpectedResult(Object left, Object right, boolean expected) {
-        assert_visitBinaryExpr_producesCorrectResult(left, "==", right, expected);
+        assert_visitBinaryExpr_producesExpectedResult(left, "==", right, expected);
     }
 
     /**
-     * Data source for {@link #visitBinaryExpr_equalsProducesExpectedResult(Object, Object, boolean)} and {@link #visitBinaryExpr_notEqualsProducesExpectedResult(Object, Object, boolean)}
-     * tests.
+     * Data source for {@link #visitBinaryExpr_equalsProducesExpectedResult(Object, Object,
+     * boolean)} and {@link #visitBinaryExpr_notEqualsProducesExpectedResult(Object, Object,
+     * boolean)} tests.
      *
      * @return Test argument data.
      */
@@ -61,8 +62,8 @@ class InterpreterTest {
     // region a != b
 
     /**
-     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} not equals produces correct result given
-     * two numbers.
+     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} not equals produces expected result
+     * given two numbers.
      *
      * @param left Left operand.
      * @param right Right operand.
@@ -70,8 +71,9 @@ class InterpreterTest {
      */
     @ParameterizedTest
     @MethodSource("visitBinaryExpr_equalsProducesExpectedResult")
-    void visitBinaryExpr_notEqualsProducesExpectedResult(Object left, Object right, boolean expected) {
-        assert_visitBinaryExpr_producesCorrectResult(left, "!=", right, !expected);
+    void visitBinaryExpr_notEqualsProducesExpectedResult(
+            Object left, Object right, boolean expected) {
+        assert_visitBinaryExpr_producesExpectedResult(left, "!=", right, !expected);
     }
 
     // endregion
@@ -85,9 +87,9 @@ class InterpreterTest {
      * @param value Operands.
      */
     @ParameterizedTest
-    @MethodSource("visitBinaryExpr_errors_givenInvalidTypes")
+    @MethodSource("visitBinaryExpr_comparisonErrors_givenInvalidTypes")
     void visitBinaryExpr_lessErrors_givenInvalidTypes(Object value) {
-        assertion_visitBinaryExpr_producesError("<", OPERANDS_MUST_BE_NUMBERS_ERROR)
+        assertion_visitBinaryExpr_producesError("<", OPERANDS_MUST_BE_NUMBERS_OR_STRINGS_ERROR)
                 .accept(value, value);
     }
 
@@ -102,14 +104,15 @@ class InterpreterTest {
     @MethodSource("visitBinaryExpr_errors_givenMixedTypes")
     void visitBinaryExpr_lessErrors_givenMixedTypes(Object first, Object second) {
         var assertion =
-                assertion_visitBinaryExpr_producesError("<", OPERANDS_MUST_BE_NUMBERS_ERROR);
+                assertion_visitBinaryExpr_producesError(
+                        "<", OPERANDS_MUST_BE_NUMBERS_OR_STRINGS_ERROR);
         assertion.accept(first, second);
         assertion.accept(second, first);
     }
 
     /**
-     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} less than produces correct result
-     * given two numbers.
+     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} less than produces expected result
+     * given two operands of valid type.
      *
      * @param left Left operand.
      * @param right Right operand.
@@ -117,20 +120,25 @@ class InterpreterTest {
      */
     @ParameterizedTest
     @MethodSource
-    void visitBinaryExpr_lessProducesCorrectResult_givenTwoNumbers(
-            double left, double right, boolean expected) {
-        assert_visitBinaryExpr_producesCorrectResult(left, "<", right, expected);
+    void visitBinaryExpr_lessProducesExpectedResult_givenValidTypes(
+            Object left, Object right, boolean expected) {
+        assert_visitBinaryExpr_producesExpectedResult(left, "<", right, expected);
     }
 
     /**
-     * Data source for {@link #visitBinaryExpr_lessProducesCorrectResult_givenTwoNumbers(double,
-     * double, boolean)} tests.
+     * Data source for {@link #visitBinaryExpr_lessProducesExpectedResult_givenValidTypes(Object,
+     * Object, boolean)} tests.
      *
      * @return Test argument data.
      */
-    private static Stream<Arguments> visitBinaryExpr_lessProducesCorrectResult_givenTwoNumbers() {
+    private static Stream<Arguments> visitBinaryExpr_lessProducesExpectedResult_givenValidTypes() {
         return Stream.of(
-                arguments(2d, 2d, false), arguments(3d, 2d, false), arguments(2d, 3d, true));
+                arguments(2d, 2d, false),
+                arguments(3d, 2d, false),
+                arguments(2d, 3d, true),
+                arguments("a", "a", false),
+                arguments("b", "a", false),
+                arguments("a", "b", true));
     }
 
     // endregion
@@ -144,9 +152,9 @@ class InterpreterTest {
      * @param value Operands.
      */
     @ParameterizedTest
-    @MethodSource("visitBinaryExpr_errors_givenInvalidTypes")
+    @MethodSource("visitBinaryExpr_comparisonErrors_givenInvalidTypes")
     void visitBinaryExpr_lessOrEqualErrors_givenInvalidTypes(Object value) {
-        assertion_visitBinaryExpr_producesError("<=", OPERANDS_MUST_BE_NUMBERS_ERROR)
+        assertion_visitBinaryExpr_producesError("<=", OPERANDS_MUST_BE_NUMBERS_OR_STRINGS_ERROR)
                 .accept(value, value);
     }
 
@@ -161,14 +169,15 @@ class InterpreterTest {
     @MethodSource("visitBinaryExpr_errors_givenMixedTypes")
     void visitBinaryExpr_lessOrEqualErrors_givenMixedTypes(Object first, Object second) {
         var assertion =
-                assertion_visitBinaryExpr_producesError("<=", OPERANDS_MUST_BE_NUMBERS_ERROR);
+                assertion_visitBinaryExpr_producesError(
+                        "<=", OPERANDS_MUST_BE_NUMBERS_OR_STRINGS_ERROR);
         assertion.accept(first, second);
         assertion.accept(second, first);
     }
 
     /**
-     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} less than or equal produces correct
-     * result given two numbers.
+     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} less than or equal produces expected
+     * result given two operands of valid type.
      *
      * @param left Left operand.
      * @param right Right operand.
@@ -176,22 +185,27 @@ class InterpreterTest {
      */
     @ParameterizedTest
     @MethodSource
-    void visitBinaryExpr_lessOrEqualProducesCorrectResult_givenTwoNumbers(
-            double left, double right, boolean expected) {
-        assert_visitBinaryExpr_producesCorrectResult(left, "<=", right, expected);
+    void visitBinaryExpr_lessOrEqualProducesExpectedResult_givenValidTypes(
+            Object left, Object right, boolean expected) {
+        assert_visitBinaryExpr_producesExpectedResult(left, "<=", right, expected);
     }
 
     /**
      * Data source for {@link
-     * #visitBinaryExpr_lessOrEqualProducesCorrectResult_givenTwoNumbers(double, double, boolean)}
+     * #visitBinaryExpr_lessOrEqualProducesExpectedResult_givenValidTypes(Object, Object, boolean)}
      * tests.
      *
      * @return Test argument data.
      */
     private static Stream<Arguments>
-            visitBinaryExpr_lessOrEqualProducesCorrectResult_givenTwoNumbers() {
+            visitBinaryExpr_lessOrEqualProducesExpectedResult_givenValidTypes() {
         return Stream.of(
-                arguments(2d, 2d, true), arguments(3d, 2d, false), arguments(2d, 3d, true));
+                arguments(2d, 2d, true),
+                arguments(3d, 2d, false),
+                arguments(2d, 3d, true),
+                arguments("a", "a", true),
+                arguments("b", "a", false),
+                arguments("a", "b", true));
     }
 
     // endregion
@@ -205,9 +219,9 @@ class InterpreterTest {
      * @param value Operands.
      */
     @ParameterizedTest
-    @MethodSource("visitBinaryExpr_errors_givenInvalidTypes")
+    @MethodSource("visitBinaryExpr_comparisonErrors_givenInvalidTypes")
     void visitBinaryExpr_greaterErrors_givenInvalidTypes(Object value) {
-        assertion_visitBinaryExpr_producesError(">", OPERANDS_MUST_BE_NUMBERS_ERROR)
+        assertion_visitBinaryExpr_producesError(">", OPERANDS_MUST_BE_NUMBERS_OR_STRINGS_ERROR)
                 .accept(value, value);
     }
 
@@ -222,14 +236,15 @@ class InterpreterTest {
     @MethodSource("visitBinaryExpr_errors_givenMixedTypes")
     void visitBinaryExpr_greaterErrors_givenMixedTypes(Object first, Object second) {
         var assertion =
-                assertion_visitBinaryExpr_producesError(">", OPERANDS_MUST_BE_NUMBERS_ERROR);
+                assertion_visitBinaryExpr_producesError(
+                        ">", OPERANDS_MUST_BE_NUMBERS_OR_STRINGS_ERROR);
         assertion.accept(first, second);
         assertion.accept(second, first);
     }
 
     /**
-     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} greater than produces correct result
-     * given two numbers.
+     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} greater than produces expected result
+     * given two operands of valid type.
      *
      * @param left Left operand.
      * @param right Right operand.
@@ -237,19 +252,19 @@ class InterpreterTest {
      */
     @ParameterizedTest
     @MethodSource
-    void visitBinaryExpr_greaterProducesCorrectResult_givenTwoNumbers(
-            double left, double right, boolean expected) {
-        assert_visitBinaryExpr_producesCorrectResult(left, ">", right, expected);
+    void visitBinaryExpr_greaterProducesExpectedResult_givenValidTypes(
+            Object left, Object right, boolean expected) {
+        assert_visitBinaryExpr_producesExpectedResult(left, ">", right, expected);
     }
 
     /**
-     * Data source for {@link #visitBinaryExpr_greaterProducesCorrectResult_givenTwoNumbers(double,
-     * double, boolean)} tests.
+     * Data source for {@link #visitBinaryExpr_greaterProducesExpectedResult_givenValidTypes(Object,
+     * Object, boolean)} tests.
      *
      * @return Test argument data.
      */
     private static Stream<Arguments>
-            visitBinaryExpr_greaterProducesCorrectResult_givenTwoNumbers() {
+            visitBinaryExpr_greaterProducesExpectedResult_givenValidTypes() {
         return Stream.of(
                 arguments(2d, 2d, false), arguments(3d, 2d, true), arguments(2d, 3d, false));
     }
@@ -265,9 +280,9 @@ class InterpreterTest {
      * @param value Operands.
      */
     @ParameterizedTest
-    @MethodSource("visitBinaryExpr_errors_givenInvalidTypes")
+    @MethodSource("visitBinaryExpr_comparisonErrors_givenInvalidTypes")
     void visitBinaryExpr_greaterOrEqualErrors_givenInvalidTypes(Object value) {
-        assertion_visitBinaryExpr_producesError(">=", OPERANDS_MUST_BE_NUMBERS_ERROR)
+        assertion_visitBinaryExpr_producesError(">=", OPERANDS_MUST_BE_NUMBERS_OR_STRINGS_ERROR)
                 .accept(value, value);
     }
 
@@ -282,14 +297,15 @@ class InterpreterTest {
     @MethodSource("visitBinaryExpr_errors_givenMixedTypes")
     void visitBinaryExpr_greaterOrEqualErrors_givenMixedTypes(Object first, Object second) {
         var assertion =
-                assertion_visitBinaryExpr_producesError(">=", OPERANDS_MUST_BE_NUMBERS_ERROR);
+                assertion_visitBinaryExpr_producesError(
+                        ">=", OPERANDS_MUST_BE_NUMBERS_OR_STRINGS_ERROR);
         assertion.accept(first, second);
         assertion.accept(second, first);
     }
 
     /**
-     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} greater than or equal produces correct
-     * result given two numbers.
+     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} greater than or equal produces
+     * expected result given two operands of valid type.
      *
      * @param left Left operand.
      * @param right Right operand.
@@ -297,20 +313,20 @@ class InterpreterTest {
      */
     @ParameterizedTest
     @MethodSource
-    void visitBinaryExpr_greaterOrEqualProducesCorrectResult_givenTwoNumbers(
-            double left, double right, boolean expected) {
-        assert_visitBinaryExpr_producesCorrectResult(left, ">=", right, expected);
+    void visitBinaryExpr_greaterOrEqualProducesExpectedResult_givenValidTypes(
+            Object left, Object right, boolean expected) {
+        assert_visitBinaryExpr_producesExpectedResult(left, ">=", right, expected);
     }
 
     /**
      * Data source for {@link
-     * #visitBinaryExpr_greaterOrEqualProducesCorrectResult_givenTwoNumbers(double, double,
+     * #visitBinaryExpr_greaterOrEqualProducesExpectedResult_givenValidTypes(Object, Object,
      * boolean)} tests.
      *
      * @return Test argument data.
      */
     private static Stream<Arguments>
-            visitBinaryExpr_greaterOrEqualProducesCorrectResult_givenTwoNumbers() {
+            visitBinaryExpr_greaterOrEqualProducesExpectedResult_givenValidTypes() {
         return Stream.of(
                 arguments(2d, 2d, true), arguments(3d, 2d, true), arguments(2d, 3d, false));
     }
@@ -359,8 +375,8 @@ class InterpreterTest {
     }
 
     /**
-     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} subtraction produces correct result
-     * given two numbers.
+     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} subtraction produces expected result
+     * given two operands of valid type.
      *
      * @param left Left operand.
      * @param right Right operand.
@@ -368,35 +384,35 @@ class InterpreterTest {
      */
     @ParameterizedTest
     @MethodSource({
-        "visitBinaryExpr_additionProducesCorrectResult_givenTwoNumbers",
-        "visitBinaryExpr_additionProducesCorrectResult_givenTwoStrings"
+        "visitBinaryExpr_additionProducesExpectedResult_givenValidTypes",
+        "visitBinaryExpr_additionProducesExpectedResult_givenTwoStrings"
     })
-    void visitBinaryExpr_additionProducesCorrectResult_givenTwoValidTypes(
+    void visitBinaryExpr_additionProducesExpectedResult_givenTwoValidTypes(
             Object left, Object right, Object expected) {
-        assert_visitBinaryExpr_producesCorrectResult(left, "+", right, expected);
+        assert_visitBinaryExpr_producesExpectedResult(left, "+", right, expected);
     }
 
     /**
      * Data source for {@link
-     * #visitBinaryExpr_additionProducesCorrectResult_givenTwoValidTypes(Object, Object, Object)}
+     * #visitBinaryExpr_additionProducesExpectedResult_givenTwoValidTypes(Object, Object, Object)}
      * tests.
      *
      * @return Test argument data.
      */
     private static Stream<Arguments>
-            visitBinaryExpr_additionProducesCorrectResult_givenTwoNumbers() {
+            visitBinaryExpr_additionProducesExpectedResult_givenValidTypes() {
         return Stream.of(arguments(2d, 2d, 4d), arguments(3d, 2d, 5d), arguments(2d, 3d, 5d));
     }
 
     /**
      * Data source for {@link
-     * #visitBinaryExpr_additionProducesCorrectResult_givenTwoValidTypes(Object, Object, Object)}
+     * #visitBinaryExpr_additionProducesExpectedResult_givenTwoValidTypes(Object, Object, Object)}
      * tests.
      *
      * @return Test argument data.
      */
     private static Stream<Arguments>
-            visitBinaryExpr_additionProducesCorrectResult_givenTwoStrings() {
+            visitBinaryExpr_additionProducesExpectedResult_givenTwoStrings() {
         return Stream.of(
                 arguments("a", "a", "aa"), arguments("b", "a", "ba"), arguments("a", "b", "ab"));
     }
@@ -412,7 +428,7 @@ class InterpreterTest {
      * @param value Operands.
      */
     @ParameterizedTest
-    @MethodSource("visitBinaryExpr_errors_givenInvalidTypes")
+    @MethodSource("visitBinaryExpr_arithmeticErrors_givenInvalidTypes")
     void visitBinaryExpr_subtractionErrors_givenInvalidTypes(Object value) {
         assertion_visitBinaryExpr_producesError("-", OPERANDS_MUST_BE_NUMBERS_ERROR)
                 .accept(value, value);
@@ -435,8 +451,8 @@ class InterpreterTest {
     }
 
     /**
-     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} subtraction produces correct result
-     * given two numbers.
+     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} subtraction produces expected result
+     * given two operands of valid type.
      *
      * @param left Left operand.
      * @param right Right operand.
@@ -444,20 +460,20 @@ class InterpreterTest {
      */
     @ParameterizedTest
     @MethodSource
-    void visitBinaryExpr_subtractionProducesCorrectResult_givenTwoNumbers(
+    void visitBinaryExpr_subtractionProducesExpectedResult_givenValidTypes(
             double left, double right, double expected) {
-        assert_visitBinaryExpr_producesCorrectResult(left, "-", right, expected);
+        assert_visitBinaryExpr_producesExpectedResult(left, "-", right, expected);
     }
 
     /**
      * Data source for {@link
-     * #visitBinaryExpr_subtractionProducesCorrectResult_givenTwoNumbers(double, double, double)}
+     * #visitBinaryExpr_subtractionProducesExpectedResult_givenValidTypes(double, double, double)}
      * tests.
      *
      * @return Test argument data.
      */
     private static Stream<Arguments>
-            visitBinaryExpr_subtractionProducesCorrectResult_givenTwoNumbers() {
+            visitBinaryExpr_subtractionProducesExpectedResult_givenValidTypes() {
         return Stream.of(arguments(2d, 2d, 0d), arguments(3d, 2d, 1d), arguments(2d, 3d, -1d));
     }
 
@@ -472,7 +488,7 @@ class InterpreterTest {
      * @param value Operands.
      */
     @ParameterizedTest
-    @MethodSource("visitBinaryExpr_errors_givenInvalidTypes")
+    @MethodSource("visitBinaryExpr_arithmeticErrors_givenInvalidTypes")
     void visitBinaryExpr_multiplicationErrors_givenInvalidTypes(Object value) {
         assertion_visitBinaryExpr_producesError("*", OPERANDS_MUST_BE_NUMBERS_ERROR)
                 .accept(value, value);
@@ -495,8 +511,8 @@ class InterpreterTest {
     }
 
     /**
-     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} multiplication produces correct result
-     * given two numbers.
+     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} multiplication produces expected
+     * result given two operands of valid type.
      *
      * @param left Left operand.
      * @param right Right operand.
@@ -504,20 +520,20 @@ class InterpreterTest {
      */
     @ParameterizedTest
     @MethodSource
-    void visitBinaryExpr_multiplicationProducesCorrectResult_givenTwoNumbers(
+    void visitBinaryExpr_multiplicationProducesExpectedResult_givenValidTypes(
             double left, double right, double expected) {
-        assert_visitBinaryExpr_producesCorrectResult(left, "*", right, expected);
+        assert_visitBinaryExpr_producesExpectedResult(left, "*", right, expected);
     }
 
     /**
      * Data source for {@link
-     * #visitBinaryExpr_multiplicationProducesCorrectResult_givenTwoNumbers(double, double, double)}
-     * tests.
+     * #visitBinaryExpr_multiplicationProducesExpectedResult_givenValidTypes(double, double,
+     * double)} tests.
      *
      * @return Test argument data.
      */
     private static Stream<Arguments>
-            visitBinaryExpr_multiplicationProducesCorrectResult_givenTwoNumbers() {
+            visitBinaryExpr_multiplicationProducesExpectedResult_givenValidTypes() {
         return Stream.of(arguments(2d, 2d, 4d), arguments(3d, 2d, 6d), arguments(2d, 3d, 6d));
     }
 
@@ -532,7 +548,7 @@ class InterpreterTest {
      * @param value Operands.
      */
     @ParameterizedTest
-    @MethodSource("visitBinaryExpr_errors_givenInvalidTypes")
+    @MethodSource("visitBinaryExpr_arithmeticErrors_givenInvalidTypes")
     void visitBinaryExpr_divisionErrors_givenInvalidTypes(Object value) {
         assertion_visitBinaryExpr_producesError("/", OPERANDS_MUST_BE_NUMBERS_ERROR)
                 .accept(value, value);
@@ -555,8 +571,8 @@ class InterpreterTest {
     }
 
     /**
-     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} division produces correct result given
-     * two numbers.
+     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} division produces expected result
+     * given two operands of valid type.
      *
      * @param left Left operand.
      * @param right Right operand.
@@ -564,24 +580,37 @@ class InterpreterTest {
      */
     @ParameterizedTest
     @MethodSource
-    void visitBinaryExpr_divisionProducesCorrectResult_givenTwoNumbers(
+    void visitBinaryExpr_divisionProducesExpectedResult_givenValidTypes(
             double left, double right, double expected) {
-        assert_visitBinaryExpr_producesCorrectResult(left, "/", right, expected);
+        assert_visitBinaryExpr_producesExpectedResult(left, "/", right, expected);
     }
 
     /**
-     * Data source for {@link #visitBinaryExpr_divisionProducesCorrectResult_givenTwoNumbers(double,
-     * double, double)} tests.
+     * Data source for {@link
+     * #visitBinaryExpr_divisionProducesExpectedResult_givenValidTypes(double, double, double)}
+     * tests.
      *
      * @return Test argument data.
      */
     private static Stream<Arguments>
-            visitBinaryExpr_divisionProducesCorrectResult_givenTwoNumbers() {
+            visitBinaryExpr_divisionProducesExpectedResult_givenValidTypes() {
         return Stream.of(
                 arguments(2d, 2d, 1d), arguments(3d, 2d, 3d / 2d), arguments(2d, 3d, 2d / 3d));
     }
 
     // endregion
+
+    /**
+     * Data source for {@link #visitBinaryExpr_greaterErrors_givenInvalidTypes(Object)}, {@link
+     * #visitBinaryExpr_greaterOrEqualErrors_givenInvalidTypes(Object)}, {@link
+     * #visitBinaryExpr_lessErrors_givenInvalidTypes(Object)}, and {@link
+     * #visitBinaryExpr_lessOrEqualErrors_givenInvalidTypes(Object)} tests.
+     *
+     * @return Test argument data.
+     */
+    private static Stream<?> visitBinaryExpr_comparisonErrors_givenInvalidTypes() {
+        return Stream.of(null, true);
+    }
 
     /**
      * Data source for {@link #visitBinaryExpr_subtractionErrors_givenInvalidTypes(Object)}, {@link
@@ -590,7 +619,7 @@ class InterpreterTest {
      *
      * @return Test argument data.
      */
-    private static Stream<?> visitBinaryExpr_errors_givenInvalidTypes() {
+    private static Stream<?> visitBinaryExpr_arithmeticErrors_givenInvalidTypes() {
         return Stream.of(null, true, "\"");
     }
 
@@ -644,7 +673,7 @@ class InterpreterTest {
      * @param right Right operand.
      * @param expected Expected result.
      */
-    private static void assert_visitBinaryExpr_producesCorrectResult(
+    private static void assert_visitBinaryExpr_producesExpectedResult(
             Object left, String operator, Object right, Object expected) {
         var expression =
                 new Expr.Binary(
@@ -684,7 +713,7 @@ class InterpreterTest {
 
     /**
      * Asserts {@link Interpreter#visitConditionalExpr(Expr.Conditional)} interprets {@link
-     * Expr.Conditional} correctly.
+     * Expr.Conditional} as expected.
      *
      * @param condition Result of condition.
      * @param expected Expected value.

@@ -55,7 +55,7 @@ public class ScannerTests {
     }
 
     /**
-     * Tests {@link Scanner#scanTokens()} emits correct {@link Token} if {@code source} contains
+     * Tests {@link Scanner#scanTokens()} emits expected {@link Token} if {@code source} contains
      * valid character sequence.
      *
      * @param source Source text to analyse.
@@ -63,19 +63,20 @@ public class ScannerTests {
      */
     @ParameterizedTest(name = "\"{0}\" = <{1}>")
     @MethodSource
-    void scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence(
+    void scanTokens_emitsExpectedToken_whenSourceContainsValidCharacterSequence(
             String source, Token expected) {
         assert_scanTokens(source, contains(expected, TokenHelper.get(EOF_LITERAL)));
     }
 
     /**
      * Data source for {@link
-     * #scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence(String, Token)} tests.
+     * #scanTokens_emitsExpectedToken_whenSourceContainsValidCharacterSequence(String, Token)}
+     * tests.
      *
      * @return Test argument data.
      */
     private static Stream<Arguments>
-            scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence() {
+            scanTokens_emitsExpectedToken_whenSourceContainsValidCharacterSequence() {
         return Set.of(
                         "(", ")", "{", "}", ":", ",", ".", "-", "+", "?", ";", "*", "!", "!=", "=",
                         "==", "<", "<=", ">", ">=", "/")
@@ -199,7 +200,7 @@ public class ScannerTests {
      * contains contiguous numerals containing one period character at start.
      */
     @Test
-    void scanTokens_emitsCorrectTokens_whenNumberHasLeadingDot() {
+    void scanTokens_emitsExpectedTokens_whenNumberHasLeadingDot() {
         assert_scanTokens(
                 ".1234",
                 contains(
@@ -213,7 +214,7 @@ public class ScannerTests {
      * contains contiguous numerals containing one period character at end.
      */
     @Test
-    void scanTokens_emitsCorrectTokens_whenNumberHasTrailingDot() {
+    void scanTokens_emitsExpectedTokens_whenNumberHasTrailingDot() {
         assert_scanTokens(
                 "1234.",
                 contains(
@@ -223,11 +224,11 @@ public class ScannerTests {
     }
 
     /**
-     * Tests {@link Scanner#scanTokens()} emits correct number {@link Token}s if {@code source}
+     * Tests {@link Scanner#scanTokens()} emits expected number {@link Token}s if {@code source}
      * contains contiguous numerals containing multiple period characters.
      */
     @Test
-    void scanTokens_emitsCorrectTokens_whenNumberHasTooManyDots() {
+    void scanTokens_emitsExpectedTokens_whenNumberHasTooManyDots() {
         assert_scanTokens(
                 "1.23.4",
                 contains(
@@ -238,11 +239,11 @@ public class ScannerTests {
     }
 
     /**
-     * Tests {@link Scanner#scanTokens()} emits correct number {@link Token}s if {@code source}
+     * Tests {@link Scanner#scanTokens()} emits expected number {@link Token}s if {@code source}
      * contains contiguous numerals containing multiple contiguous period characters.
      */
     @Test
-    void scanTokens_emitsCorrectTokens_whenNumberHasContiguousDots() {
+    void scanTokens_emitsExpectedTokens_whenNumberHasContiguousDots() {
         assert_scanTokens(
                 "12..34",
                 contains(

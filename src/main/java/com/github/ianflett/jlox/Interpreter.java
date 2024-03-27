@@ -35,23 +35,43 @@ public class Interpreter implements Visitor<Object> {
             case EQUAL_EQUAL -> isEqual(left, right);
 
             case GREATER -> {
-                checkNumberOperands(expr.operator, left, right);
-                yield (double) left > (double) right;
+                if (left instanceof Double && right instanceof Double) {
+                    yield (double) left > (double) right;
+                }
+                if (left instanceof String && right instanceof String) {
+                    yield ((String) left).compareTo((String) right) > 0;
+                }
+                throw new RuntimeError(expr.operator, OPERANDS_MUST_BE_TWO_NUMBERS_OR_STRINGS);
             }
 
             case GREATER_EQUAL -> {
-                checkNumberOperands(expr.operator, left, right);
-                yield (double) left >= (double) right;
+                if (left instanceof Double && right instanceof Double) {
+                    yield (double) left >= (double) right;
+                }
+                if (left instanceof String && right instanceof String) {
+                    yield ((String) left).compareTo((String) right) >= 0;
+                }
+                throw new RuntimeError(expr.operator, OPERANDS_MUST_BE_TWO_NUMBERS_OR_STRINGS);
             }
 
             case LESS -> {
-                checkNumberOperands(expr.operator, left, right);
-                yield (double) left < (double) right;
+                if (left instanceof Double && right instanceof Double) {
+                    yield (double) left < (double) right;
+                }
+                if (left instanceof String && right instanceof String) {
+                    yield ((String) left).compareTo((String) right) < 0;
+                }
+                throw new RuntimeError(expr.operator, OPERANDS_MUST_BE_TWO_NUMBERS_OR_STRINGS);
             }
 
             case LESS_EQUAL -> {
-                checkNumberOperands(expr.operator, left, right);
-                yield (double) left <= (double) right;
+                if (left instanceof Double && right instanceof Double) {
+                    yield (double) left <= (double) right;
+                }
+                if (left instanceof String && right instanceof String) {
+                    yield ((String) left).compareTo((String) right) <= 0;
+                }
+                throw new RuntimeError(expr.operator, OPERANDS_MUST_BE_TWO_NUMBERS_OR_STRINGS);
             }
 
             case MINUS -> {
@@ -76,8 +96,7 @@ public class Interpreter implements Visitor<Object> {
                 if (left instanceof String && right instanceof String) {
                     yield (String) left + (String) right;
                 }
-                throw new RuntimeError(
-                        expr.operator, "Operands must be two numbers or two strings.");
+                throw new RuntimeError(expr.operator, OPERANDS_MUST_BE_TWO_NUMBERS_OR_STRINGS);
             }
 
             default -> null; // Unreachable.
@@ -217,4 +236,7 @@ public class Interpreter implements Visitor<Object> {
 
         return object.toString();
     }
+
+    private static final String OPERANDS_MUST_BE_TWO_NUMBERS_OR_STRINGS =
+            "Operands must be two numbers or two strings.";
 }

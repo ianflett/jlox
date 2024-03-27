@@ -23,22 +23,22 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
     protected abstract T GetPrinter();
 
     /**
-     * Asserts {@link AstPrinter#print(Expr)} produces correct output for example abstract syntax
+     * Asserts {@link AstPrinter#print(Expr)} produces expected output for example abstract syntax
      * tree.
      */
-    void assert_print_producesCorrectOutput(Expr expression, String expected) {
+    void assert_print_producesExpectedOutput(Expr expression, String expected) {
         assertThat(GetPrinter().print(expression), is(equalTo(expected)));
     }
 
     /** First {@link Expr} example: {@code -123 * (45.67)}. */
-    static final Expr assert_print_producesCorrectOutput_expression1 =
+    static final Expr assert_print_producesExpectedOutput_expression1 =
             new Binary(
                     new Expr.Unary(new Token(MINUS, "-", null, 1), new Expr.Literal(123)),
                     new Token(STAR, "*", null, 1),
                     new Expr.Grouping(new Expr.Literal(45.67)));
 
     /** Second {@link Expr} example: {@code (1 + 2) * (4 - 3)}. */
-    static final Expr assert_print_producesCorrectOutput_expression2 =
+    static final Expr assert_print_producesExpectedOutput_expression2 =
             new Expr.Binary(
                     new Expr.Grouping(
                             new Expr.Binary(
@@ -52,39 +52,40 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
                                     new Token(MINUS, "-", null, 1),
                                     new Expr.Literal(3))));
 
-    /** Asserts {@link AstPrinter#visitBinaryExpr(Binary)} produces correct output. */
-    protected void assert_visitBinaryExpr_producesCorrectOutput(String expected) {
+    /** Asserts {@link AstPrinter#visitBinaryExpr(Binary)} produces expected output. */
+    protected void assert_visitBinaryExpr_producesExpectedOutput(String expected) {
         assertThat(
-                GetPrinter().visitBinaryExpr(visitBinaryExpr_producesCorrectOutput_expression),
+                GetPrinter().visitBinaryExpr(visitBinaryExpr_producesExpectedOutput_expression),
                 is(equalTo(expected)));
     }
 
     /** {@code 1 + 2} */
-    private static final Binary visitBinaryExpr_producesCorrectOutput_expression =
+    private static final Binary visitBinaryExpr_producesExpectedOutput_expression =
             new Binary(new Expr.Literal(1), new Token(PLUS, "+", null, 1), new Expr.Literal(2));
 
-    /** Asserts {@link Lisp#visitGroupingExpr(Expr.Grouping)} produces correct output. */
-    protected void assert_visitGroupingExpr_producesCorrectOutput(String expected) {
+    /** Asserts {@link Lisp#visitGroupingExpr(Expr.Grouping)} produces expected output. */
+    protected void assert_visitGroupingExpr_producesExpectedOutput(String expected) {
         assertThat(
                 GetPrinter()
                         .visitGroupingExpr(
-                                assert_visitGroupingExpr_producesCorrectOutput_expression),
+                                assert_visitGroupingExpr_producesExpectedOutput_expression),
                 is(equalTo(expected)));
     }
 
     /** {@code (1)} */
-    private static final Expr.Grouping assert_visitGroupingExpr_producesCorrectOutput_expression =
+    private static final Expr.Grouping assert_visitGroupingExpr_producesExpectedOutput_expression =
             new Expr.Grouping(new Expr.Literal(1));
 
-    /** Asserts {@link AstPrinter#visitUnaryExpr(Expr.Unary)} produces correct output. */
-    void assert_visitUnaryExpr_producesCorrectOutput(String expected) {
+    /** Asserts {@link AstPrinter#visitUnaryExpr(Expr.Unary)} produces expected output. */
+    void assert_visitUnaryExpr_producesExpectedOutput(String expected) {
         assertThat(
-                GetPrinter().visitUnaryExpr(assert_visitUnaryExpr_producesCorrectOutput_expression),
+                GetPrinter()
+                        .visitUnaryExpr(assert_visitUnaryExpr_producesExpectedOutput_expression),
                 is(equalTo(expected)));
     }
 
     /** {@code -1} */
-    private static final Expr.Unary assert_visitUnaryExpr_producesCorrectOutput_expression =
+    private static final Expr.Unary assert_visitUnaryExpr_producesExpectedOutput_expression =
             new Expr.Unary(new Token(MINUS, "-", null, 1), new Expr.Literal(1));
 
     /** Unit tests {@link Lisp} class. */
@@ -101,63 +102,63 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
         }
 
         /**
-         * Tests {@link Lisp#print(Expr)} produces correct output for example abstract syntax tree.
+         * Tests {@link Lisp#print(Expr)} produces expected output for example abstract syntax tree.
          */
         @ParameterizedTest(name = "\"{1}\"")
         @MethodSource
-        protected void print_producesCorrectOutput(Expr expression, String expected) {
-            assert_print_producesCorrectOutput(expression, expected);
+        protected void print_producesExpectedOutput(Expr expression, String expected) {
+            assert_print_producesExpectedOutput(expression, expected);
         }
 
         /**
-         * Data source for {@link #print_producesCorrectOutput(Expr, String)} tests.
+         * Data source for {@link #print_producesExpectedOutput(Expr, String)} tests.
          *
          * @return Test argument data.
          */
-        private static Stream<Arguments> print_producesCorrectOutput() {
+        private static Stream<Arguments> print_producesExpectedOutput() {
             return Stream.of(
                     arguments(
-                            assert_print_producesCorrectOutput_expression1,
+                            assert_print_producesExpectedOutput_expression1,
                             "(* (- 123) (group 45.67))"),
                     arguments(
-                            assert_print_producesCorrectOutput_expression2,
+                            assert_print_producesExpectedOutput_expression2,
                             "(* (group (+ 1 2)) (group (- 4 3)))"));
         }
 
-        /** Tests {@link Lisp#visitBinaryExpr(Binary)} produces correct output. */
+        /** Tests {@link Lisp#visitBinaryExpr(Binary)} produces expected output. */
         @Test
-        protected void visitBinaryExpr_producesCorrectOutput() {
-            assert_visitBinaryExpr_producesCorrectOutput("(+ 1 2)");
+        protected void visitBinaryExpr_producesExpectedOutput() {
+            assert_visitBinaryExpr_producesExpectedOutput("(+ 1 2)");
         }
 
-        /** Tests {@link Lisp#visitGroupingExpr(Expr.Grouping)} produces correct output. */
+        /** Tests {@link Lisp#visitGroupingExpr(Expr.Grouping)} produces expected output. */
         @Test
-        protected void visitGroupingExpr_producesCorrectOutput() {
-            assert_visitGroupingExpr_producesCorrectOutput("(group 1)");
+        protected void visitGroupingExpr_producesExpectedOutput() {
+            assert_visitGroupingExpr_producesExpectedOutput("(group 1)");
         }
 
-        /** Tests {@link AstPrinter#visitLiteralExpr(Expr.Literal)} produces correct output. */
+        /** Tests {@link AstPrinter#visitLiteralExpr(Expr.Literal)} produces expected output. */
         @ParameterizedTest
         @MethodSource
-        void visitLiteralExpr_producesCorrectOutput(Expr.Literal expression, String expected) {
+        void visitLiteralExpr_producesExpectedOutput(Expr.Literal expression, String expected) {
             assertThat(GetPrinter().visitLiteralExpr(expression), is(equalTo(expected)));
         }
 
         /**
-         * Data source for {@link #visitLiteralExpr_producesCorrectOutput(Expr.Literal, String)}
+         * Data source for {@link #visitLiteralExpr_producesExpectedOutput(Expr.Literal, String)}
          * tests.
          *
          * @return Test argument data.
          */
-        private static Stream<Arguments> visitLiteralExpr_producesCorrectOutput() {
+        private static Stream<Arguments> visitLiteralExpr_producesExpectedOutput() {
             return Stream.of(
                     arguments(new Expr.Literal(1), "1"), arguments(new Expr.Literal(null), "nil"));
         }
 
-        /** Tests {@link Lisp#visitUnaryExpr(Expr.Unary)} produces correct output. */
+        /** Tests {@link Lisp#visitUnaryExpr(Expr.Unary)} produces expected output. */
         @Test
-        void visitUnaryExpr_producesCorrectOutput() {
-            assert_visitUnaryExpr_producesCorrectOutput("(- 1)");
+        void visitUnaryExpr_producesExpectedOutput() {
+            assert_visitUnaryExpr_producesExpectedOutput("(- 1)");
         }
     }
 
@@ -175,65 +176,65 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
         }
 
         /**
-         * Tests {@link ReversePolishNotation#print(Expr)} produces correct output for example
+         * Tests {@link ReversePolishNotation#print(Expr)} produces expected output for example
          * abstract syntax tree.
          */
         @ParameterizedTest(name = "\"{1}\"")
         @MethodSource
-        protected void print_producesCorrectOutput(Expr expression, String expected) {
-            assert_print_producesCorrectOutput(expression, expected);
+        protected void print_producesExpectedOutput(Expr expression, String expected) {
+            assert_print_producesExpectedOutput(expression, expected);
         }
 
         /**
-         * Data source for {@link #print_producesCorrectOutput(Expr, String)} tests.
+         * Data source for {@link #print_producesExpectedOutput(Expr, String)} tests.
          *
          * @return Test argument data.
          */
-        private static Stream<Arguments> print_producesCorrectOutput() {
+        private static Stream<Arguments> print_producesExpectedOutput() {
             return Stream.of(
-                    arguments(assert_print_producesCorrectOutput_expression1, "123 - 45.67 *"),
-                    arguments(assert_print_producesCorrectOutput_expression2, "1 2 + 4 3 - *"));
+                    arguments(assert_print_producesExpectedOutput_expression1, "123 - 45.67 *"),
+                    arguments(assert_print_producesExpectedOutput_expression2, "1 2 + 4 3 - *"));
         }
 
-        /** Tests {@link ReversePolishNotation#visitBinaryExpr(Binary)} produces correct output. */
+        /** Tests {@link ReversePolishNotation#visitBinaryExpr(Binary)} produces expected output. */
         @Test
-        protected void visitBinaryExpr_producesCorrectOutput() {
-            assert_visitBinaryExpr_producesCorrectOutput("1 2 +");
+        protected void visitBinaryExpr_producesExpectedOutput() {
+            assert_visitBinaryExpr_producesExpectedOutput("1 2 +");
         }
 
         /**
-         * Tests {@link ReversePolishNotation#visitGroupingExpr(Expr.Grouping)} produces correct
+         * Tests {@link ReversePolishNotation#visitGroupingExpr(Expr.Grouping)} produces expected
          * output.
          */
         @Test
-        protected void visitGroupingExpr_producesCorrectOutput() {
-            assert_visitGroupingExpr_producesCorrectOutput("1");
+        protected void visitGroupingExpr_producesExpectedOutput() {
+            assert_visitGroupingExpr_producesExpectedOutput("1");
         }
 
-        /** Tests {@link AstPrinter#visitLiteralExpr(Expr.Literal)} produces correct output. */
+        /** Tests {@link AstPrinter#visitLiteralExpr(Expr.Literal)} produces expected output. */
         @ParameterizedTest
         @MethodSource
-        void visitLiteralExpr_producesCorrectOutput(Expr.Literal expression, String expected) {
+        void visitLiteralExpr_producesExpectedOutput(Expr.Literal expression, String expected) {
             assertThat(GetPrinter().visitLiteralExpr(expression), is(equalTo(expected)));
         }
 
         /**
-         * Data source for {@link #visitLiteralExpr_producesCorrectOutput(Expr.Literal, String)}
+         * Data source for {@link #visitLiteralExpr_producesExpectedOutput(Expr.Literal, String)}
          * tests.
          *
          * @return Test argument data.
          */
-        private static Stream<Arguments> visitLiteralExpr_producesCorrectOutput() {
+        private static Stream<Arguments> visitLiteralExpr_producesExpectedOutput() {
             return Stream.of(
                     arguments(new Expr.Literal(1), "1"), arguments(new Expr.Literal(null), "nil"));
         }
 
         /**
-         * Tests {@link ReversePolishNotation#visitUnaryExpr(Expr.Unary)} produces correct output.
+         * Tests {@link ReversePolishNotation#visitUnaryExpr(Expr.Unary)} produces expected output.
          */
         @Test
-        void visitUnaryExpr_producesCorrectOutput() {
-            assert_visitUnaryExpr_producesCorrectOutput("1 -");
+        void visitUnaryExpr_producesExpectedOutput() {
+            assert_visitUnaryExpr_producesExpectedOutput("1 -");
         }
     }
 
@@ -251,67 +252,67 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
         }
 
         /**
-         * Tests {@link Directory#print(Expr)} produces correct output for example abstract syntax
+         * Tests {@link Directory#print(Expr)} produces expected output for example abstract syntax
          * tree.
          */
         @ParameterizedTest(name = "\"{1}\"")
         @MethodSource
-        protected void print_producesCorrectOutput(Expr expression, String expected) {
-            assert_print_producesCorrectOutput(expression, expected);
+        protected void print_producesExpectedOutput(Expr expression, String expected) {
+            assert_print_producesExpectedOutput(expression, expected);
         }
 
         /**
-         * Data source for {@link #print_producesCorrectOutput(Expr, String)} tests.
+         * Data source for {@link #print_producesExpectedOutput(Expr, String)} tests.
          *
          * @return Test argument data.
          */
-        private static Stream<Arguments> print_producesCorrectOutput() {
+        private static Stream<Arguments> print_producesExpectedOutput() {
             return Stream.of(
                     arguments(
-                            assert_print_producesCorrectOutput_expression1,
+                            assert_print_producesExpectedOutput_expression1,
                             String.format("*%n├ -%n│ └ 123%n└ ()%n  └ 45.67%n")),
                     arguments(
-                            assert_print_producesCorrectOutput_expression2,
+                            assert_print_producesExpectedOutput_expression2,
                             String.format(
                                     "*%n├ ()%n│ └ +%n│   ├ 1%n│   └ 2%n└ ()%n  └ -%n    ├ 4%n    └"
                                             + " 3%n")));
         }
 
-        /** Tests {@link Directory#visitBinaryExpr(Binary)} produces correct output. */
+        /** Tests {@link Directory#visitBinaryExpr(Binary)} produces expected output. */
         @Test
-        protected void visitBinaryExpr_producesCorrectOutput() {
-            assert_visitBinaryExpr_producesCorrectOutput(String.format("+%n├ 1%n└ 2%n"));
+        protected void visitBinaryExpr_producesExpectedOutput() {
+            assert_visitBinaryExpr_producesExpectedOutput(String.format("+%n├ 1%n└ 2%n"));
         }
 
-        /** Tests {@link Directory#visitGroupingExpr(Expr.Grouping)} produces correct output. */
+        /** Tests {@link Directory#visitGroupingExpr(Expr.Grouping)} produces expected output. */
         @Test
-        protected void visitGroupingExpr_producesCorrectOutput() {
-            assert_visitGroupingExpr_producesCorrectOutput(String.format("()%n└ 1%n"));
+        protected void visitGroupingExpr_producesExpectedOutput() {
+            assert_visitGroupingExpr_producesExpectedOutput(String.format("()%n└ 1%n"));
         }
 
-        /** Tests {@link AstPrinter#visitLiteralExpr(Expr.Literal)} produces correct output. */
+        /** Tests {@link AstPrinter#visitLiteralExpr(Expr.Literal)} produces expected output. */
         @ParameterizedTest
         @MethodSource
-        void visitLiteralExpr_producesCorrectOutput(Expr.Literal expression, String expected) {
+        void visitLiteralExpr_producesExpectedOutput(Expr.Literal expression, String expected) {
             assertThat(GetPrinter().visitLiteralExpr(expression), is(equalTo(expected)));
         }
 
         /**
-         * Data source for {@link #visitLiteralExpr_producesCorrectOutput(Expr.Literal, String)}
+         * Data source for {@link #visitLiteralExpr_producesExpectedOutput(Expr.Literal, String)}
          * tests.
          *
          * @return Test argument data.
          */
-        private static Stream<Arguments> visitLiteralExpr_producesCorrectOutput() {
+        private static Stream<Arguments> visitLiteralExpr_producesExpectedOutput() {
             return Stream.of(
                     arguments(new Expr.Literal(1), String.format("1%n")),
                     arguments(new Expr.Literal(null), String.format("nil%n")));
         }
 
-        /** Tests {@link Directory#visitUnaryExpr(Expr.Unary)} produces correct output. */
+        /** Tests {@link Directory#visitUnaryExpr(Expr.Unary)} produces expected output. */
         @Test
-        void visitUnaryExpr_producesCorrectOutput() {
-            assert_visitUnaryExpr_producesCorrectOutput(String.format("-%n└ 1%n"));
+        void visitUnaryExpr_producesExpectedOutput() {
+            assert_visitUnaryExpr_producesExpectedOutput(String.format("-%n└ 1%n"));
         }
     }
 }
