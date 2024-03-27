@@ -598,6 +598,17 @@ class InterpreterTest {
     }
 
     /**
+     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} division produces error given
+     * denominator of zero.
+     */
+    @ParameterizedTest
+    @ValueSource(doubles = {-0d, 0d})
+    void visitBinaryExpr_divisionErrors_givenZeroDenominator(double denominator) {
+        var assertion = assertion_visitBinaryExpr_producesError("/", "Division by zero.");
+        assertion.accept(2d, denominator);
+    }
+
+    /**
      * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} division produces expected result
      * given two operands of valid type.
      *

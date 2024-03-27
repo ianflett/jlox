@@ -41,7 +41,13 @@ public class Interpreter implements Visitor<Object> {
             case LESS_EQUAL -> compare(left, expr.operator, right, (l, r) -> l <= r);
 
             case MINUS -> arithmetic(left, expr.operator, right, (l, r) -> l - r);
-            case SLASH -> arithmetic(left, expr.operator, right, (l, r) -> l / r);
+            case SLASH -> {
+                checkNumberOperands(expr.operator, left, right);
+                if (0d == (double) right) {
+                    throw new RuntimeError(expr.operator, "Division by zero.");
+                }
+                yield (double) left / (double) right;
+            }
             case STAR -> arithmetic(left, expr.operator, right, (l, r) -> l * r);
 
             case PLUS -> {
