@@ -42,7 +42,8 @@ public class ParserTests {
      *
      * @return Test argument data.
      */
-    public static Stream<Arguments> parse_binaryGrammarsSharePrecedence_givenGrammarsAtSameLevel() {
+    private static Stream<Arguments>
+            parse_binaryGrammarsSharePrecedence_givenGrammarsAtSameLevel() {
         return Stream.of(
                 arguments("==", "!="),
                 arguments("<", "<="),
@@ -158,7 +159,7 @@ public class ParserTests {
      *
      * @return Test argument data.
      */
-    public static Stream<Arguments> parse_binaryGrammarsOfDifferingPrecedence() {
+    private static Stream<Arguments> parse_binaryGrammarsOfDifferingPrecedence() {
         return Stream.of(
                 arguments("*", "+"),
                 arguments("+", "<"),
@@ -189,7 +190,7 @@ public class ParserTests {
      *
      * @return Test argument data.
      */
-    public static Stream<Arguments>
+    private static Stream<Arguments>
             parse_producesError_whenLeftOperandMissingFromBinaryExpression() {
         return Stream.of(
                 arguments("==", "equality"),
@@ -248,7 +249,7 @@ public class ParserTests {
      * @param left Left operator.
      * @param right Right operator.
      */
-    static void assert_parse_leftBinaryHasHigherPrecedence(String left, String right) {
+    private static void assert_parse_leftBinaryHasHigherPrecedence(String left, String right) {
         var tokens = TokenHelper.asList("1", left, "2", right, "3");
 
         // (1 left 2) right 3
@@ -268,7 +269,7 @@ public class ParserTests {
      * @param left Left operator.
      * @param right Right operator.
      */
-    static void assert_parse_rightBinaryHasHigherPrecedence(String left, String right) {
+    private static void assert_parse_rightBinaryHasHigherPrecedence(String left, String right) {
         var tokens = TokenHelper.asList("1", left, "2", right, "3");
 
         // 1 left (2 right 3)
@@ -290,7 +291,7 @@ public class ParserTests {
      * @param left Left operator.
      * @param right Right operator.
      */
-    static void assert_parse_rightUnaryHasHigherPrecedence(String left, String right) {
+    private static void assert_parse_rightUnaryHasHigherPrecedence(String left, String right) {
         var tokens = TokenHelper.asList(left, right, "1");
 
         // left (right 1)
@@ -309,7 +310,7 @@ public class ParserTests {
      * @param expectedErrorMessage Expected error message.
      * @throws Exception Unable to read from standard error.
      */
-    static void assert_parseError(List<Token> tokens, String expectedErrorMessage)
+    private static void assert_parseError(List<Token> tokens, String expectedErrorMessage)
             throws Exception {
         final Expr[] actual = {null};
         var error = tapSystemErrNormalized(() -> actual[0] = new Parser(tokens).parse());

@@ -114,7 +114,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          *
          * @return Test argument data.
          */
-        static Stream<Arguments> print_producesCorrectOutput() {
+        private static Stream<Arguments> print_producesCorrectOutput() {
             return Stream.of(
                     arguments(
                             assert_print_producesCorrectOutput_expression1,
@@ -149,7 +149,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          *
          * @return Test argument data.
          */
-        static Stream<Arguments> visitLiteralExpr_producesCorrectOutput() {
+        private static Stream<Arguments> visitLiteralExpr_producesCorrectOutput() {
             return Stream.of(
                     arguments(new Expr.Literal(1), "1"), arguments(new Expr.Literal(null), "nil"));
         }
@@ -189,7 +189,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          *
          * @return Test argument data.
          */
-        static Stream<Arguments> print_producesCorrectOutput() {
+        private static Stream<Arguments> print_producesCorrectOutput() {
             return Stream.of(
                     arguments(assert_print_producesCorrectOutput_expression1, "123 - 45.67 *"),
                     arguments(assert_print_producesCorrectOutput_expression2, "1 2 + 4 3 - *"));
@@ -223,7 +223,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          *
          * @return Test argument data.
          */
-        static Stream<Arguments> visitLiteralExpr_producesCorrectOutput() {
+        private static Stream<Arguments> visitLiteralExpr_producesCorrectOutput() {
             return Stream.of(
                     arguments(new Expr.Literal(1), "1"), arguments(new Expr.Literal(null), "nil"));
         }
@@ -265,7 +265,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          *
          * @return Test argument data.
          */
-        static Stream<Arguments> print_producesCorrectOutput() {
+        private static Stream<Arguments> print_producesCorrectOutput() {
             return Stream.of(
                     arguments(
                             assert_print_producesCorrectOutput_expression1,
@@ -302,7 +302,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          *
          * @return Test argument data.
          */
-        static Stream<Arguments> visitLiteralExpr_producesCorrectOutput() {
+        private static Stream<Arguments> visitLiteralExpr_producesCorrectOutput() {
             return Stream.of(
                     arguments(new Expr.Literal(1), String.format("1%n")),
                     arguments(new Expr.Literal(null), String.format("nil%n")));

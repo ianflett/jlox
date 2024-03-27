@@ -74,7 +74,7 @@ public class ScannerTests {
      *
      * @return Test argument data.
      */
-    static Stream<Arguments>
+    private static Stream<Arguments>
             scanTokens_emitsCorrectToken_whenSourceContainsValidCharacterSequence() {
         return Set.of(
                         "(", ")", "{", "}", ":", ",", ".", "-", "+", "?", ";", "*", "!", "!=", "=",
@@ -119,7 +119,7 @@ public class ScannerTests {
      *
      * @return Test argument data.
      */
-    static Stream<Arguments> scanTokens_emitsNothing_whenMultiComment() {
+    private static Stream<Arguments> scanTokens_emitsNothing_whenMultiComment() {
         return Stream.of(
                 arguments("/**/", 1),
                 arguments("/* This is a comment. */", 1),
@@ -171,7 +171,7 @@ public class ScannerTests {
      *
      * @return Test argument data.
      */
-    static Stream<Arguments> scanTokens_emitsString_whenTextWithinQuotes() {
+    private static Stream<Arguments> scanTokens_emitsString_whenTextWithinQuotes() {
         return Stream.of(
                 arguments("\"\"", 1),
                 arguments("\"This is a string.\"", 1),
