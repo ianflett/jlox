@@ -48,8 +48,9 @@ public class Interpreter implements Visitor<Object> {
                 if (left instanceof Double && right instanceof Double) {
                     yield (double) left + (double) right;
                 }
-                if (left instanceof String && right instanceof String) {
-                    yield (String) left + (String) right;
+                if (left instanceof String || right instanceof String) {
+                    yield (null != left ? left.toString() : "null")
+                            + (null != right ? right.toString() : "null");
                 }
                 throw new RuntimeError(expr.operator, OPERANDS_MUST_BE_TWO_NUMBERS_OR_STRINGS);
             }

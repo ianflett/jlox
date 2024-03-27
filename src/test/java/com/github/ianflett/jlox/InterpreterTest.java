@@ -358,20 +358,47 @@ class InterpreterTest {
     }
 
     /**
-     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} addition produces error given mixed
-     * types.
+     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} addition produces error given
+     * non-{@link String} mixed types.
      *
      * @param first First operand to check.
      * @param second Second operand to check.
      */
     @ParameterizedTest
     @MethodSource("visitBinaryExpr_errors_givenMixedTypes")
-    void visitBinaryExpr_additionErrors_givenMixedTypes(Object first, Object second) {
+    void visitBinaryExpr_additionErrors_givenNonStringMixedTypes(Object first, Object second) {
         var assertion =
                 assertion_visitBinaryExpr_producesError(
                         "+", OPERANDS_MUST_BE_NUMBERS_OR_STRINGS_ERROR);
         assertion.accept(first, second);
         assertion.accept(second, first);
+    }
+
+    /**
+     * Tests {@link Interpreter#visitBinaryExpr(Expr.Binary)} addition produces expected result
+     * given.
+     *
+     * @param other Other operand to check.
+     */
+    @ParameterizedTest
+    @MethodSource
+    void visitBinaryExpr_additionProducesExpectedResult_givenStringAndOtherType(Object other) {
+        var string = "string";
+        assert_visitBinaryExpr_producesExpectedResult(
+                string, "+", other, String.format("%s%s", string, other));
+        assert_visitBinaryExpr_producesExpectedResult(
+                other, "+", string, String.format("%s%s", other, string));
+    }
+
+    /**
+     * Data source for {@link
+     * #visitBinaryExpr_additionProducesExpectedResult_givenStringAndOtherType(Object)} tests.
+     *
+     * @return Test argument data.
+     */
+    private static Stream<?>
+            visitBinaryExpr_additionProducesExpectedResult_givenStringAndOtherType() {
+        return Stream.of(null, true, 1d);
     }
 
     /**
@@ -624,15 +651,15 @@ class InterpreterTest {
     }
 
     /**
-     * Data source for {@link #visitBinaryExpr_additionErrors_givenMixedTypes(Object, Object)}
-     * {@link #visitBinaryExpr_subtractionErrors_givenMixedTypes(Object, Object)}, {@link
+     * Data source for {@link #visitBinaryExpr_additionErrors_givenNonStringMixedTypes(Object,
+     * Object)}, {@link #visitBinaryExpr_subtractionErrors_givenMixedTypes(Object, Object)}, {@link
      * #visitBinaryExpr_multiplicationErrors_givenMixedTypes(Object, Object)}, and {@link
      * #visitBinaryExpr_divisionErrors_givenMixedTypes(Object, Object)} tests.
      *
      * @return Test argument data.
      */
     private static Stream<Arguments> visitBinaryExpr_errors_givenMixedTypes() {
-        var values = new Object[] {null, true, 1d, "\""};
+        var values = new Object[] {null, true, 1d};
         Builder<Arguments> stream = Stream.builder();
         for (var i = 0; i < values.length; ++i) {
             for (var j = i + 1; j < values.length; ++j) {
