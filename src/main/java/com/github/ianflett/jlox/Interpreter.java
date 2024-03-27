@@ -1,6 +1,7 @@
 package com.github.ianflett.jlox;
 
 import com.github.ianflett.jlox.Expr.Visitor;
+import java.util.function.BiFunction;
 
 /** Interprets abstract syntax tree. */
 public class Interpreter implements Visitor<Object> {
@@ -34,60 +35,14 @@ public class Interpreter implements Visitor<Object> {
             case BANG_EQUAL -> !isEqual(left, right);
             case EQUAL_EQUAL -> isEqual(left, right);
 
-            case GREATER -> {
-                if (left instanceof Double && right instanceof Double) {
-                    yield (double) left > (double) right;
-                }
-                if (left instanceof String && right instanceof String) {
-                    yield ((String) left).compareTo((String) right) > 0;
-                }
-                throw new RuntimeError(expr.operator, OPERANDS_MUST_BE_TWO_NUMBERS_OR_STRINGS);
-            }
+            case GREATER -> compare(left, expr.operator, right, (l, r) -> l > r);
+            case GREATER_EQUAL -> compare(left, expr.operator, right, (l, r) -> l >= r);
+            case LESS -> compare(left, expr.operator, right, (l, r) -> l < r);
+            case LESS_EQUAL -> compare(left, expr.operator, right, (l, r) -> l <= r);
 
-            case GREATER_EQUAL -> {
-                if (left instanceof Double && right instanceof Double) {
-                    yield (double) left >= (double) right;
-                }
-                if (left instanceof String && right instanceof String) {
-                    yield ((String) left).compareTo((String) right) >= 0;
-                }
-                throw new RuntimeError(expr.operator, OPERANDS_MUST_BE_TWO_NUMBERS_OR_STRINGS);
-            }
-
-            case LESS -> {
-                if (left instanceof Double && right instanceof Double) {
-                    yield (double) left < (double) right;
-                }
-                if (left instanceof String && right instanceof String) {
-                    yield ((String) left).compareTo((String) right) < 0;
-                }
-                throw new RuntimeError(expr.operator, OPERANDS_MUST_BE_TWO_NUMBERS_OR_STRINGS);
-            }
-
-            case LESS_EQUAL -> {
-                if (left instanceof Double && right instanceof Double) {
-                    yield (double) left <= (double) right;
-                }
-                if (left instanceof String && right instanceof String) {
-                    yield ((String) left).compareTo((String) right) <= 0;
-                }
-                throw new RuntimeError(expr.operator, OPERANDS_MUST_BE_TWO_NUMBERS_OR_STRINGS);
-            }
-
-            case MINUS -> {
-                checkNumberOperands(expr.operator, left, right);
-                yield (double) left - (double) right;
-            }
-
-            case SLASH -> {
-                checkNumberOperands(expr.operator, left, right);
-                yield (double) left / (double) right;
-            }
-
-            case STAR -> {
-                checkNumberOperands(expr.operator, left, right);
-                yield (double) left * (double) right;
-            }
+            case MINUS -> arithmetic(left, expr.operator, right, (l, r) -> l - r);
+            case SLASH -> arithmetic(left, expr.operator, right, (l, r) -> l / r);
+            case STAR -> arithmetic(left, expr.operator, right, (l, r) -> l * r);
 
             case PLUS -> {
                 if (left instanceof Double && right instanceof Double) {
@@ -162,12 +117,53 @@ public class Interpreter implements Visitor<Object> {
     }
 
     /**
+     * Performs standard comparison.
+     *
+     * @param left Left operand.
+     * @param operator Operator applied.
+     * @param right Right operand.
+     * @param operation Comparison.
+     * @return {@code true} if comparison is correct; {@code false} otherwise.
+     */
+    private static boolean compare(
+            Object left,
+            Token operator,
+            Object right,
+            BiFunction<Double, Double, Boolean> operation) {
+        if (left instanceof Double && right instanceof Double) {
+            return operation.apply((double) left, (double) right);
+        }
+        if (left instanceof String && right instanceof String) {
+            return operation.apply((double) ((String) left).compareTo((String) right), 0d);
+        }
+        throw new RuntimeError(operator, OPERANDS_MUST_BE_TWO_NUMBERS_OR_STRINGS);
+    }
+
+    /**
+     * Performs standard arithmetic.
+     *
+     * @param left Left operand.
+     * @param operator Operator applied.
+     * @param right Right operand.
+     * @param operation Comparison.
+     * @return Result of operation on operands.
+     */
+    private static double arithmetic(
+            Object left,
+            Token operator,
+            Object right,
+            BiFunction<Double, Double, Double> operation) {
+        checkNumberOperands(operator, left, right);
+        return operation.apply((double) left, (double) right);
+    }
+
+    /**
      * Whether the operand is number.
      *
      * @param operator Operator being applied.
      * @param operand Operand to check.
      */
-    private void checkNumberOperand(Token operator, Object operand) {
+    private static void checkNumberOperand(Token operator, Object operand) {
         if (operand instanceof Double) return;
         throw new RuntimeError(operator, "Operand must be a number.");
     }
@@ -179,7 +175,7 @@ public class Interpreter implements Visitor<Object> {
      * @param left Operand to check.
      * @param right Operand to check.
      */
-    private void checkNumberOperands(Token operator, Object left, Object right) {
+    private static void checkNumberOperands(Token operator, Object left, Object right) {
         if (left instanceof Double && right instanceof Double) return;
         throw new RuntimeError(operator, "Operands must be numbers.");
     }
@@ -200,7 +196,7 @@ public class Interpreter implements Visitor<Object> {
      * @param object Value to evaluate.
      * @return {@code false} if value is {@code false} or {@code nil}; {@code true} otherwise.
      */
-    private boolean isTruthy(Object object) {
+    private static boolean isTruthy(Object object) {
         if (null == object) return false;
         if (object instanceof Boolean) return (boolean) object;
         return true;
@@ -213,7 +209,7 @@ public class Interpreter implements Visitor<Object> {
      * @param b Right hand value.
      * @return {@code true} if equal; {@code false} otherwise.
      */
-    private boolean isEqual(Object a, Object b) {
+    private static boolean isEqual(Object a, Object b) {
         return null == a && null == b || null != a && a.equals(b);
     }
 
@@ -223,7 +219,7 @@ public class Interpreter implements Visitor<Object> {
      * @param object Value to convert.
      * @return {@link String} representation of value.
      */
-    private String stringify(Object object) {
+    private static String stringify(Object object) {
         if (null == object) return "nil";
 
         if (object instanceof Double) {

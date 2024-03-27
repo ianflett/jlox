@@ -384,7 +384,7 @@ class InterpreterTest {
      */
     @ParameterizedTest
     @MethodSource({
-        "visitBinaryExpr_additionProducesExpectedResult_givenValidTypes",
+        "visitBinaryExpr_additionProducesExpectedResult_givenTwoNumbers",
         "visitBinaryExpr_additionProducesExpectedResult_givenTwoStrings"
     })
     void visitBinaryExpr_additionProducesExpectedResult_givenTwoValidTypes(
@@ -400,7 +400,7 @@ class InterpreterTest {
      * @return Test argument data.
      */
     private static Stream<Arguments>
-            visitBinaryExpr_additionProducesExpectedResult_givenValidTypes() {
+            visitBinaryExpr_additionProducesExpectedResult_givenTwoNumbers() {
         return Stream.of(arguments(2d, 2d, 4d), arguments(3d, 2d, 5d), arguments(2d, 3d, 5d));
     }
 
