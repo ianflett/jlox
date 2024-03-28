@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.github.ianflett.jlox'
-version = '0.7.3.0'
+version = '0.8.0.0'
 
 apply from: "$rootDir/gradle/details.gradle"
 apply from: "$rootDir/gradle/generate-ast.gradle"
@@ -31,14 +31,18 @@ java {
 }
 
 defineAst {
-    namespace = project.group
-    className = 'Expr'
-    types = [
-        'Binary': ['Expr left', 'Token operator', 'Expr right'],
-        'Conditional': ['Expr condition', 'Expr thenBranch', 'Expr elseBranch'],
-        'Grouping': ['Expr expression'],
-        'Literal': ['Object value'],
-        'Unary': ['Token operator', 'Expr right']
+    definitions = [
+        "${project.group}.Expr": [
+            'Binary': ['Expr left', 'Token operator', 'Expr right'],
+            'Conditional': ['Expr condition', 'Expr thenBranch', 'Expr elseBranch'],
+            'Grouping': ['Expr expression'],
+            'Literal': ['Object value'],
+            'Unary': ['Token operator', 'Expr right']
+        ],
+        "${project.group}.Stmt": [
+            'Expression': ['Expr expression'],
+            'Print': ['Expr expression']
+        ]
     ]
 }
 

@@ -7,44 +7,58 @@ tasks.register('defineAst') {
 
     ext {
         sourceSet = project.sourceSets.main.java
-        namespace = ''
-        className = ''
-        types = [:]
+        definitions = [:]
     }
 
     doLast {
-        def targetDir = Paths.get(sourceSet.srcDirs?[0].toString(), namespace?.split(/\./)).toString()
-        if (!Files.exists(Paths.get(targetDir))) file(targetDir).mkdirs()
-        def targetFile = Paths.get(targetDir, "${className}.java").toString()
+        for (def definition : definitions) {
+            if (!definition.value instanceof Map || 0 == ((Map)definition.value).size())
+                throw new IllegalArgumentException("Definition parameters must be a Map with entries");
 
-        new File(targetFile).withWriter { writer ->
-
-            if (namespace?.trim()) {
-                writer << """package $namespace;
-
-"""
-            }
-
-            writer << """import java.util.List;
-import java.util.Objects;
-
-abstract class $className {
-${          defineVisitor(className, types.keySet())}
-${
-            // AST classes.
-            types.collect { def type ->
-                defineType(className, type.key, type.value)
-            }.join System.lineSeparator()
-}
-
-    abstract <R> R accept(Visitor<R> visitor);
-}
-"""
+            defineFile(sourceSet, definition.key, definition.value)
         }
     }
 }
 
 compileJava.dependsOn defineAst
+
+static void defineFile(SourceDirectorySet sourceSet, String name, Map<String, List<String>> types) {
+
+    def namespace = null
+    def className = name.substring(name.lastIndexOf('.') + 1)
+    if (name != className) {
+        namespace = name.substring(0, name.lastIndexOf('.'))
+    }
+
+    def targetDir = Paths.get(sourceSet.srcDirs?[0].toString(), namespace?.split(/\./)).toString()
+    if (!Files.exists(Paths.get(targetDir))) file(targetDir).mkdirs()
+    def targetFile = Paths.get(targetDir, "${className}.java").toString()
+
+    new File(targetFile).withWriter { writer ->
+
+        if (namespace?.trim()) {
+            writer << """package $namespace;
+
+"""
+        }
+
+        writer << """import java.util.List;
+import java.util.Objects;
+
+abstract class $className {
+${      defineVisitor(className, types.keySet())}
+${
+        // AST classes.
+        types.collect { def type ->
+            defineType(className, type.key, type.value)
+        }.join System.lineSeparator()
+}
+
+    abstract <R> R accept(Visitor<R> visitor);
+}
+"""
+    }
+}
 
 /**
  * Outputs type within abstract syntax tree class.
