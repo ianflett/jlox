@@ -2,6 +2,7 @@ package com.github.ianflett.jlox;
 
 import static com.github.ianflett.jlox.TokenType.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
@@ -9,7 +10,7 @@ import java.util.function.Supplier;
 public class Parser {
 
     /** Thrown when parsing error encountered. */
-    private static class ParseError extends RuntimeException {}
+    static class ParseError extends RuntimeException {}
 
     /** List of tokens to process. */
     private final List<Token> tokens;
@@ -27,16 +28,57 @@ public class Parser {
     }
 
     /**
-     * Parses {@link #tokens} into abstract syntax tree.
+     * Parses {@link #tokens} into statements.
      *
-     * @return Abstract syntax tree.
+     * <pre>program -> {@link #statement()}* EOF</pre>
+     *
+     * @return {@link List} of statements.
      */
-    Expr parse() {
-        try {
-            return expression();
-        } catch (ParseError error) {
-            return null;
+    List<Stmt> parse() {
+        List<Stmt> statements = new ArrayList<>();
+        while (!isAtEnd()) {
+            statements.add(statement());
         }
+        return statements;
+    }
+
+    /**
+     * Parses statement grammar rule.
+     *
+     * <pre>{@link #statement()} -> {@link #printStatement()} | {@link #expressionStatment()}</pre>
+     *
+     * @return {@link Stmt}.
+     */
+    private Stmt statement() {
+        if (match(PRINT)) return printStatement();
+
+        return expressionStatement();
+    }
+
+    /**
+     * Parses print statement grammar rule.
+     *
+     * <pre>{@link #printStatement()} -> "print" {@link #expression()} ";"</pre>
+     *
+     * @return Print {@link Stmt}.
+     */
+    private Stmt printStatement() {
+        Expr value = expression();
+        consume(SEMICOLON, "Expect ';' after value.");
+        return new Stmt.Print(value);
+    }
+
+    /**
+     * Parses expression statement grammar rule.
+     *
+     * <pre>{@link #expressionStatement()} -> {@link #expression()} ";"</pre>
+     *
+     * @return Expression {@link Stmt}.
+     */
+    private Stmt expressionStatement() {
+        Expr expr = expression();
+        consume(SEMICOLON, "Expect ';' after expression.");
+        return new Stmt.Expression(expr);
     }
 
     /**

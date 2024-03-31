@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 
 /** Defines Lox language interpreter. */
 public final class Lox {
@@ -90,12 +91,12 @@ public final class Lox {
         var scanner = new Scanner(source);
         var tokens = scanner.scanTokens();
         var parser = new Parser(tokens);
-        var expression = parser.parse();
+        List<Stmt> statements = parser.parse();
 
         // Stop on syntax error.
         if (hadError) return;
 
-        interpreter.interpret(expression);
+        interpreter.interpret(statements);
     }
 
     /**

@@ -1,20 +1,21 @@
 package com.github.ianflett.jlox;
 
-import com.github.ianflett.jlox.Expr.Visitor;
+import java.util.List;
 import java.util.function.BiFunction;
 
 /** Interprets abstract syntax tree. */
-public class Interpreter implements Visitor<Object> {
+public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     /**
-     * Interprets {@link Expr}ession.
+     * Interprets {@link List} of statements.
      *
-     * @param expression {@link Expr}ession to interpret.
+     * @param statements {@link Stmt}s to interpret.
      */
-    void interpret(Expr expression) {
+    void interpret(List<Stmt> statements) {
         try {
-            var value = evaluate(expression);
-            System.out.println(stringify(value));
+            for (var statement : statements) {
+                execute(statement);
+            }
         } catch (RuntimeError error) {
             Lox.runtimeError(error);
         }
@@ -165,7 +166,7 @@ public class Interpreter implements Visitor<Object> {
     }
 
     /**
-     * Whether the operand is number.
+     * Whether operand is number.
      *
      * @param operator Operator being applied.
      * @param operand Operand to check.
@@ -176,7 +177,7 @@ public class Interpreter implements Visitor<Object> {
     }
 
     /**
-     * Whether the operands are numbers.
+     * Whether operands are numbers.
      *
      * @param operator Operator being applied.
      * @param left Operand to check.
@@ -188,13 +189,47 @@ public class Interpreter implements Visitor<Object> {
     }
 
     /**
-     * Calls expression's {@link Visitor} implementation.
+     * Calls expression's {@link Expr.Visitor} implementation.
      *
      * @param expr {@link Expr}ession.
-     * @return {@link Visitor}'s return.
+     * @return {@link Expr.Visitor}'s return.
      */
     private Object evaluate(Expr expr) {
         return expr.accept(this);
+    }
+
+    /**
+     * Calls statement's {@link Stmt.Visitor} implementation.
+     *
+     * @param stmt {@link Stmt}.
+     */
+    private void execute(Stmt stmt) {
+        stmt.accept(this);
+    }
+
+    /**
+     * Processes expression statement.
+     *
+     * @param stmt {@link Stmt} to process.
+     * @return {@code null}.
+     */
+    @Override
+    public Void visitExpressionStmt(Stmt.Expression stmt) {
+        evaluate(stmt.expression);
+        return null;
+    }
+
+    /**
+     * Processes print statement.
+     *
+     * @param stmt {@link Stmt} to process.
+     * @return {@code null}.
+     */
+    @Override
+    public Void visitPrintStmt(Stmt.Print stmt) {
+        var value = evaluate(stmt.expression);
+        System.out.println(stringify(value));
+        return null;
     }
 
     /**

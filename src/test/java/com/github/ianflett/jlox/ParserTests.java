@@ -5,7 +5,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
 import org.hamcrest.Matcher;
 import org.junit.jupiter.api.Test;
@@ -19,7 +21,8 @@ public class ParserTests {
     /** Tests {@link Parser#parse()} returns {@code null} when {@link Token} unrecognised. */
     @Test
     void parse_returnsNull_whenTokenUnrecognised() throws Exception {
-        assert_parseError(TokenHelper.asList("}"), "[line 1] Error at '}': Expect expression.");
+        assert_parseError(
+                TokenHelper.asList("}", ";"), "[line 1] Error at '}': Expect expression.");
     }
 
     /**
@@ -69,24 +72,27 @@ public class ParserTests {
      */
     @Test
     void parse_conditionalHasHigherPrecedenceThanSequence_givenSequenceAndConditional() {
-        var tokens = TokenHelper.asList("1", ",", "2", "?", "3", ",", "1", ":", "2", ",", "3");
+        var tokens = TokenHelper.asList("1", ",", "2", "?", "3", ",", "1", ":", "2", ",", "3", ";");
 
         var expected =
-                new Expr.Binary(
-                        new Expr.Binary(
-                                new Expr.Literal(1d),
-                                TokenHelper.get(","),
-                                new Expr.Conditional(
-                                        new Expr.Literal(2d),
-                                        new Expr.Binary(
-                                                new Expr.Literal(3d),
-                                                TokenHelper.get(","),
-                                                new Expr.Literal(1d)),
-                                        new Expr.Literal(2d))),
-                        TokenHelper.get(","),
-                        new Expr.Literal(3d));
+                new Stmt[] {
+                    new Stmt.Expression(
+                            new Expr.Binary(
+                                    new Expr.Binary(
+                                            new Expr.Literal(1d),
+                                            TokenHelper.get(","),
+                                            new Expr.Conditional(
+                                                    new Expr.Literal(2d),
+                                                    new Expr.Binary(
+                                                            new Expr.Literal(3d),
+                                                            TokenHelper.get(","),
+                                                            new Expr.Literal(1d)),
+                                                    new Expr.Literal(2d))),
+                                    TokenHelper.get(","),
+                                    new Expr.Literal(3d)))
+                };
 
-        assert_parse(tokens, is(equalTo(expected)));
+        assert_parse(tokens, contains(expected));
     }
 
     /**
@@ -95,16 +101,25 @@ public class ParserTests {
      */
     @Test
     void parse_equalityHasHigherPrecedenceThanConditional_givenConditionalAndEquality() {
-        var tokens = TokenHelper.asList("1", "==", "2", "?", "3", "==", "2", ":", "1", "==", "3");
+        var tokens =
+                TokenHelper.asList("1", "==", "2", "?", "3", "==", "2", ":", "1", "==", "3", ";");
 
-        var expected =
-                new Expr.Conditional(
-                        new Expr.Binary(
-                                new Expr.Literal(1d), TokenHelper.get("=="), new Expr.Literal(2d)),
-                        new Expr.Binary(
-                                new Expr.Literal(3d), TokenHelper.get("=="), new Expr.Literal(2d)),
-                        new Expr.Binary(
-                                new Expr.Literal(1d), TokenHelper.get("=="), new Expr.Literal(3d)));
+        var expected = new ArrayList<Stmt>();
+        expected.add(
+                new Stmt.Expression(
+                        new Expr.Conditional(
+                                new Expr.Binary(
+                                        new Expr.Literal(1d),
+                                        TokenHelper.get("=="),
+                                        new Expr.Literal(2d)),
+                                new Expr.Binary(
+                                        new Expr.Literal(3d),
+                                        TokenHelper.get("=="),
+                                        new Expr.Literal(2d)),
+                                new Expr.Binary(
+                                        new Expr.Literal(1d),
+                                        TokenHelper.get("=="),
+                                        new Expr.Literal(3d)))));
 
         assert_parse(tokens, is(equalTo(expected)));
     }
@@ -135,18 +150,20 @@ public class ParserTests {
     @MethodSource("parse_binaryGrammarsOfDifferingPrecedence")
     void parse_groupingChangesPrecedence_whenLowerPrecedenceGrammarIsWithinParentheses(
             String higher, String lower) {
-        var tokens = TokenHelper.asList("1", higher, "(", "2", lower, "3", ")");
+        var tokens = TokenHelper.asList("1", higher, "(", "2", lower, "3", ")", ";");
 
         // 1 higher (2 lower 3)
-        var expected =
-                new Expr.Binary(
-                        new Expr.Literal(1d),
-                        TokenHelper.get(higher),
-                        new Expr.Grouping(
-                                new Expr.Binary(
-                                        new Expr.Literal(2d),
-                                        TokenHelper.get(lower),
-                                        new Expr.Literal(3d))));
+        var expected = new ArrayList<Stmt>();
+        expected.add(
+                new Stmt.Expression(
+                        new Expr.Binary(
+                                new Expr.Literal(1d),
+                                TokenHelper.get(higher),
+                                new Expr.Grouping(
+                                        new Expr.Binary(
+                                                new Expr.Literal(2d),
+                                                TokenHelper.get(lower),
+                                                new Expr.Literal(3d))))));
 
         assert_parse(tokens, is(equalTo(expected)));
     }
@@ -179,7 +196,7 @@ public class ParserTests {
     void parse_producesError_whenLeftOperandMissingFromBinaryExpression(String token, String type)
             throws Exception {
         assert_parseError(
-                TokenHelper.asList(token, "1", token, "2"),
+                TokenHelper.asList(token, "1", token, "2", ";"),
                 String.format(
                         "[line 1] Error at '%s': Missing left hand operand for %s.", token, type));
     }
@@ -205,13 +222,15 @@ public class ParserTests {
      */
     @Test
     void parse_unaryHasHigherPrecedenceThanFactor_givenFactorThenUnary() {
-        var tokens = TokenHelper.asList("1", "*", "-", "2");
+        var tokens = TokenHelper.asList("1", "*", "-", "2", ";");
 
-        var expected =
-                new Expr.Binary(
-                        new Expr.Literal(1d),
-                        TokenHelper.get("*"),
-                        new Expr.Unary(TokenHelper.get("-"), new Expr.Literal(2d)));
+        var expected = new ArrayList<Stmt>();
+        expected.add(
+                new Stmt.Expression(
+                        new Expr.Binary(
+                                new Expr.Literal(1d),
+                                TokenHelper.get("*"),
+                                new Expr.Unary(TokenHelper.get("-"), new Expr.Literal(2d)))));
 
         assert_parse(tokens, is(equalTo(expected)));
     }
@@ -222,13 +241,15 @@ public class ParserTests {
      */
     @Test
     void parse_unaryHasHigherPrecedenceThanFactor_givenUnaryThenFactor() {
-        var tokens = TokenHelper.asList("-", "1", "*", "2");
+        var tokens = TokenHelper.asList("-", "1", "*", "2", ";");
 
-        var expected =
-                new Expr.Binary(
-                        new Expr.Unary(TokenHelper.get("-"), new Expr.Literal(1d)),
-                        TokenHelper.get("*"),
-                        new Expr.Literal(2d));
+        var expected = new ArrayList<Stmt>();
+        expected.add(
+                new Stmt.Expression(
+                        new Expr.Binary(
+                                new Expr.Unary(TokenHelper.get("-"), new Expr.Literal(1d)),
+                                TokenHelper.get("*"),
+                                new Expr.Literal(2d))));
 
         assert_parse(tokens, is(equalTo(expected)));
     }
@@ -239,7 +260,8 @@ public class ParserTests {
      * @param tokens {@link Token} {@link List}.
      * @param matcher Expected matcher result.
      */
-    private static void assert_parse(List<Token> tokens, Matcher<Expr> matcher) {
+    private static void assert_parse(
+            List<Token> tokens, Matcher<Iterable<? extends Stmt>> matcher) {
         assertThat(new Parser(tokens).parse(), matcher);
     }
 
@@ -250,15 +272,19 @@ public class ParserTests {
      * @param right Right operator.
      */
     private static void assert_parse_leftBinaryHasHigherPrecedence(String left, String right) {
-        var tokens = TokenHelper.asList("1", left, "2", right, "3");
+        var tokens = TokenHelper.asList("1", left, "2", right, "3", ";");
 
         // (1 left 2) right 3
-        var expected =
-                new Expr.Binary(
+        var expected = new ArrayList<Stmt>();
+        expected.add(
+                new Stmt.Expression(
                         new Expr.Binary(
-                                new Expr.Literal(1d), TokenHelper.get(left), new Expr.Literal(2d)),
-                        TokenHelper.get(right),
-                        new Expr.Literal(3d));
+                                new Expr.Binary(
+                                        new Expr.Literal(1d),
+                                        TokenHelper.get(left),
+                                        new Expr.Literal(2d)),
+                                TokenHelper.get(right),
+                                new Expr.Literal(3d))));
 
         assert_parse(tokens, is(equalTo(expected)));
     }
@@ -270,17 +296,19 @@ public class ParserTests {
      * @param right Right operator.
      */
     private static void assert_parse_rightBinaryHasHigherPrecedence(String left, String right) {
-        var tokens = TokenHelper.asList("1", left, "2", right, "3");
+        var tokens = TokenHelper.asList("1", left, "2", right, "3", ";");
 
         // 1 left (2 right 3)
-        var expected =
-                new Expr.Binary(
-                        new Expr.Literal(1d),
-                        TokenHelper.get(left),
+        var expected = new ArrayList<Stmt>();
+        expected.add(
+                new Stmt.Expression(
                         new Expr.Binary(
-                                new Expr.Literal(2d),
-                                TokenHelper.get(right),
-                                new Expr.Literal(3d)));
+                                new Expr.Literal(1d),
+                                TokenHelper.get(left),
+                                new Expr.Binary(
+                                        new Expr.Literal(2d),
+                                        TokenHelper.get(right),
+                                        new Expr.Literal(3d)))));
 
         assert_parse(tokens, is(equalTo(expected)));
     }
@@ -292,13 +320,15 @@ public class ParserTests {
      * @param right Right operator.
      */
     private static void assert_parse_rightUnaryHasHigherPrecedence(String left, String right) {
-        var tokens = TokenHelper.asList(left, right, "1");
+        var tokens = TokenHelper.asList(left, right, "1", ";");
 
         // left (right 1)
-        var expected =
-                new Expr.Unary(
-                        TokenHelper.get(left),
-                        new Expr.Unary(TokenHelper.get(right), new Expr.Literal(1d)));
+        var expected = new ArrayList<Stmt>();
+        expected.add(
+                new Stmt.Expression(
+                        new Expr.Unary(
+                                TokenHelper.get(left),
+                                new Expr.Unary(TokenHelper.get(right), new Expr.Literal(1d)))));
 
         assert_parse(tokens, is(equalTo(expected)));
     }
@@ -308,14 +338,23 @@ public class ParserTests {
      *
      * @param tokens List of {@link Token}s.
      * @param expectedErrorMessage Expected error message.
-     * @throws Exception Unable to read from standard error.
      */
     private static void assert_parseError(List<Token> tokens, String expectedErrorMessage)
             throws Exception {
-        final Expr[] actual = {null};
-        var error = tapSystemErrNormalized(() -> actual[0] = new Parser(tokens).parse());
+        AtomicReference<List<Stmt>> actual = new AtomicReference<>();
+        AtomicReference<List<Stmt>> expected = new AtomicReference<>();
 
-        assertThat(actual[0], is(equalTo(null)));
+        String error =
+                tapSystemErrNormalized(
+                        () -> {
+                            try {
+                                actual.set(new Parser(tokens).parse());
+                                expected.set(List.of(new Stmt.Expression(null)));
+                            } catch (Parser.ParseError ignored) {
+                            }
+                        });
+
+        assertThat(actual.get(), is(equalTo(expected.get())));
         assertThat(error, is(equalTo(expectedErrorMessage + "\n")));
     }
 }

@@ -95,7 +95,7 @@ ${
             var ${subclassName.toLowerCase()} = ($subclassName)o;
 
             return ${
-        fieldNames.collect {"Objects.equals($it, ${subclassName.toLowerCase()}.$it)" }.join " && "
+        fieldNames.collect {"Objects.equals(this.$it, ${subclassName.toLowerCase()}.$it)" }.join " && "
     };
         }
 
