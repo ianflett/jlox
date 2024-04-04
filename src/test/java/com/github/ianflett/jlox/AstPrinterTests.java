@@ -1,6 +1,6 @@
 package com.github.ianflett.jlox;
 
-import static com.github.ianflett.jlox.TokenType.*;
+import static com.github.ianflett.jlox.TestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -9,7 +9,6 @@ import static org.junit.jupiter.params.provider.Arguments.arguments;
 import com.github.ianflett.jlox.AstPrinter.Directory;
 import com.github.ianflett.jlox.AstPrinter.Lisp;
 import com.github.ianflett.jlox.AstPrinter.ReversePolishNotation;
-import com.github.ianflett.jlox.Expr.Binary;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,27 +31,13 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
 
     /** First {@link Expr} example: {@code -123 * (45.67)}. */
     static final Expr assert_print_producesExpectedOutput_expression1 =
-            new Binary(
-                    new Expr.Unary(new Token(MINUS, "-", null, 1), new Expr.Literal(123)),
-                    new Token(STAR, "*", null, 1),
-                    new Expr.Grouping(new Expr.Literal(45.67)));
+            e(e(t("-"), 123), t("*"), e(45.67));
 
     /** Second {@link Expr} example: {@code (1 + 2) * (4 - 3)}. */
     static final Expr assert_print_producesExpectedOutput_expression2 =
-            new Expr.Binary(
-                    new Expr.Grouping(
-                            new Expr.Binary(
-                                    new Expr.Literal(1),
-                                    new Token(PLUS, "+", null, 1),
-                                    new Expr.Literal(2))),
-                    new Token(STAR, "*", null, 1),
-                    new Expr.Grouping(
-                            new Expr.Binary(
-                                    new Expr.Literal(4),
-                                    new Token(MINUS, "-", null, 1),
-                                    new Expr.Literal(3))));
+            e(e(e(1, t("+"), 2)), t("*"), e(e(4, t("-"), 3)));
 
-    /** Asserts {@link AstPrinter#visitBinaryExpr(Binary)} produces expected output. */
+    /** Asserts {@link AstPrinter#visitBinaryExpr(Expr.Binary)} produces expected output. */
     protected void assert_visitBinaryExpr_producesExpectedOutput(String expected) {
         assertThat(
                 GetPrinter().visitBinaryExpr(visitBinaryExpr_producesExpectedOutput_expression),
@@ -60,8 +45,8 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
     }
 
     /** {@code 1 + 2} */
-    private static final Binary visitBinaryExpr_producesExpectedOutput_expression =
-            new Binary(new Expr.Literal(1), new Token(PLUS, "+", null, 1), new Expr.Literal(2));
+    private static final Expr.Binary visitBinaryExpr_producesExpectedOutput_expression =
+            (Expr.Binary) e(1, t("+"), 2);
 
     /** Asserts {@link Lisp#visitGroupingExpr(Expr.Grouping)} produces expected output. */
     protected void assert_visitGroupingExpr_producesExpectedOutput(String expected) {
@@ -74,7 +59,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
 
     /** {@code (1)} */
     private static final Expr.Grouping assert_visitGroupingExpr_producesExpectedOutput_expression =
-            new Expr.Grouping(new Expr.Literal(1));
+            (Expr.Grouping) e(1);
 
     /** Asserts {@link AstPrinter#visitUnaryExpr(Expr.Unary)} produces expected output. */
     void assert_visitUnaryExpr_producesExpectedOutput(String expected) {
@@ -86,7 +71,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
 
     /** {@code -1} */
     private static final Expr.Unary assert_visitUnaryExpr_producesExpectedOutput_expression =
-            new Expr.Unary(new Token(MINUS, "-", null, 1), new Expr.Literal(1));
+            (Expr.Unary) e(t("-"), 1);
 
     /** Unit tests {@link Lisp} class. */
     static class LispTests extends AstPrinterTests<Lisp> {
@@ -119,22 +104,22 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
             return Stream.of(
                     arguments(
                             assert_print_producesExpectedOutput_expression1,
-                            "(* (- 123) (group 45.67))"),
+                            "(* (- 123.0) (group 45.67))"),
                     arguments(
                             assert_print_producesExpectedOutput_expression2,
-                            "(* (group (+ 1 2)) (group (- 4 3)))"));
+                            "(* (group (+ 1.0 2.0)) (group (- 4.0 3.0)))"));
         }
 
-        /** Tests {@link Lisp#visitBinaryExpr(Binary)} produces expected output. */
+        /** Tests {@link Lisp#visitBinaryExpr(Expr.Binary)} produces expected output. */
         @Test
         protected void visitBinaryExpr_producesExpectedOutput() {
-            assert_visitBinaryExpr_producesExpectedOutput("(+ 1 2)");
+            assert_visitBinaryExpr_producesExpectedOutput("(+ 1.0 2.0)");
         }
 
         /** Tests {@link Lisp#visitGroupingExpr(Expr.Grouping)} produces expected output. */
         @Test
         protected void visitGroupingExpr_producesExpectedOutput() {
-            assert_visitGroupingExpr_producesExpectedOutput("(group 1)");
+            assert_visitGroupingExpr_producesExpectedOutput("(group 1.0)");
         }
 
         /** Tests {@link AstPrinter#visitLiteralExpr(Expr.Literal)} produces expected output. */
@@ -152,13 +137,14 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          */
         private static Stream<Arguments> visitLiteralExpr_producesExpectedOutput() {
             return Stream.of(
-                    arguments(new Expr.Literal(1), "1"), arguments(new Expr.Literal(null), "nil"));
+                    arguments(new Expr.Literal(1d), "1.0"),
+                    arguments(new Expr.Literal(null), "nil"));
         }
 
         /** Tests {@link Lisp#visitUnaryExpr(Expr.Unary)} produces expected output. */
         @Test
         void visitUnaryExpr_producesExpectedOutput() {
-            assert_visitUnaryExpr_producesExpectedOutput("(- 1)");
+            assert_visitUnaryExpr_producesExpectedOutput("(- 1.0)");
         }
     }
 
@@ -192,14 +178,19 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          */
         private static Stream<Arguments> print_producesExpectedOutput() {
             return Stream.of(
-                    arguments(assert_print_producesExpectedOutput_expression1, "123 - 45.67 *"),
-                    arguments(assert_print_producesExpectedOutput_expression2, "1 2 + 4 3 - *"));
+                    arguments(assert_print_producesExpectedOutput_expression1, "123.0 - 45.67 *"),
+                    arguments(
+                            assert_print_producesExpectedOutput_expression2,
+                            "1.0 2.0 + 4.0 3.0 - *"));
         }
 
-        /** Tests {@link ReversePolishNotation#visitBinaryExpr(Binary)} produces expected output. */
+        /**
+         * Tests {@link ReversePolishNotation#visitBinaryExpr(Expr.Binary)} produces expected
+         * output.
+         */
         @Test
         protected void visitBinaryExpr_producesExpectedOutput() {
-            assert_visitBinaryExpr_producesExpectedOutput("1 2 +");
+            assert_visitBinaryExpr_producesExpectedOutput("1.0 2.0 +");
         }
 
         /**
@@ -208,7 +199,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          */
         @Test
         protected void visitGroupingExpr_producesExpectedOutput() {
-            assert_visitGroupingExpr_producesExpectedOutput("1");
+            assert_visitGroupingExpr_producesExpectedOutput("1.0");
         }
 
         /** Tests {@link AstPrinter#visitLiteralExpr(Expr.Literal)} produces expected output. */
@@ -226,7 +217,8 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          */
         private static Stream<Arguments> visitLiteralExpr_producesExpectedOutput() {
             return Stream.of(
-                    arguments(new Expr.Literal(1), "1"), arguments(new Expr.Literal(null), "nil"));
+                    arguments(new Expr.Literal(1d), "1.0"),
+                    arguments(new Expr.Literal(null), "nil"));
         }
 
         /**
@@ -234,7 +226,7 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          */
         @Test
         void visitUnaryExpr_producesExpectedOutput() {
-            assert_visitUnaryExpr_producesExpectedOutput("1 -");
+            assert_visitUnaryExpr_producesExpectedOutput("1.0 -");
         }
     }
 
@@ -270,24 +262,24 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
             return Stream.of(
                     arguments(
                             assert_print_producesExpectedOutput_expression1,
-                            String.format("*%n├ -%n│ └ 123%n└ ()%n  └ 45.67%n")),
+                            String.format("*%n├ -%n│ └ 123.0%n└ ()%n  └ 45.67%n")),
                     arguments(
                             assert_print_producesExpectedOutput_expression2,
                             String.format(
-                                    "*%n├ ()%n│ └ +%n│   ├ 1%n│   └ 2%n└ ()%n  └ -%n    ├ 4%n    └"
-                                            + " 3%n")));
+                                    "*%n├ ()%n│ └ +%n│   ├ 1.0%n│   └ 2.0%n└ ()%n  └ -%n    ├ 4.0%n"
+                                            + "    └ 3.0%n")));
         }
 
-        /** Tests {@link Directory#visitBinaryExpr(Binary)} produces expected output. */
+        /** Tests {@link Directory#visitBinaryExpr(Expr.Binary)} produces expected output. */
         @Test
         protected void visitBinaryExpr_producesExpectedOutput() {
-            assert_visitBinaryExpr_producesExpectedOutput(String.format("+%n├ 1%n└ 2%n"));
+            assert_visitBinaryExpr_producesExpectedOutput(String.format("+%n├ 1.0%n└ 2.0%n"));
         }
 
         /** Tests {@link Directory#visitGroupingExpr(Expr.Grouping)} produces expected output. */
         @Test
         protected void visitGroupingExpr_producesExpectedOutput() {
-            assert_visitGroupingExpr_producesExpectedOutput(String.format("()%n└ 1%n"));
+            assert_visitGroupingExpr_producesExpectedOutput(String.format("()%n└ 1.0%n"));
         }
 
         /** Tests {@link AstPrinter#visitLiteralExpr(Expr.Literal)} produces expected output. */
@@ -305,14 +297,14 @@ public abstract class AstPrinterTests<T extends AstPrinter> {
          */
         private static Stream<Arguments> visitLiteralExpr_producesExpectedOutput() {
             return Stream.of(
-                    arguments(new Expr.Literal(1), String.format("1%n")),
+                    arguments(new Expr.Literal(1d), String.format("1.0%n")),
                     arguments(new Expr.Literal(null), String.format("nil%n")));
         }
 
         /** Tests {@link Directory#visitUnaryExpr(Expr.Unary)} produces expected output. */
         @Test
         void visitUnaryExpr_producesExpectedOutput() {
-            assert_visitUnaryExpr_producesExpectedOutput(String.format("-%n└ 1%n"));
+            assert_visitUnaryExpr_producesExpectedOutput(String.format("-%n└ 1.0%n"));
         }
     }
 }

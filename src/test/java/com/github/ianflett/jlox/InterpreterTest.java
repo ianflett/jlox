@@ -1,5 +1,6 @@
 package com.github.ianflett.jlox;
 
+import static com.github.ianflett.jlox.TestHelper.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -689,12 +690,10 @@ class InterpreterTest {
      */
     private static BiConsumer<Object, Object> assertion_visitBinaryExpr_producesError(
             String operator, String expected) {
-        var token = TokenHelper.get(operator);
+        var token = t(operator);
         return (left, right) -> {
-            var expression =
-                    new Expr.Binary(new Expr.Literal(left), token, new Expr.Literal(right));
             try {
-                new Interpreter().visitBinaryExpr(expression);
+                new Interpreter().visitBinaryExpr((Expr.Binary) e(left, token, right));
                 fail("No error thrown.");
             } catch (RuntimeError exception) {
                 assertThat(exception.token, is(equalTo(token)));
@@ -713,9 +712,7 @@ class InterpreterTest {
      */
     private static void assert_visitBinaryExpr_producesExpectedResult(
             Object left, String operator, Object right, Object expected) {
-        var expression =
-                new Expr.Binary(
-                        new Expr.Literal(left), TokenHelper.get(operator), new Expr.Literal(right));
+        var expression = (Expr.Binary) e(left, t(operator), right);
 
         assertThat(new Interpreter().visitBinaryExpr(expression), is(equalTo(expected)));
     }
@@ -757,9 +754,7 @@ class InterpreterTest {
      * @param expected Expected value.
      */
     private static void assert_visitConditionalExpr(boolean condition, double expected) {
-        var expression =
-                new Expr.Conditional(
-                        new Expr.Literal(condition), new Expr.Literal(2d), new Expr.Literal(3d));
+        var expression = (Expr.Conditional) e(condition, 2, 3);
         assertThat(new Interpreter().visitConditionalExpr(expression), is(equalTo(expected)));
     }
 
@@ -777,8 +772,7 @@ class InterpreterTest {
     @MethodSource("literalValues")
     void visitGrouping_returnsValue_givenValue(Object value) {
         assertThat(
-                new Interpreter().visitGroupingExpr(new Expr.Grouping(new Expr.Literal(value))),
-                is(equalTo(value)));
+                new Interpreter().visitGroupingExpr((Expr.Grouping) e(value)), is(equalTo(value)));
     }
 
     // endregion
@@ -874,8 +868,8 @@ class InterpreterTest {
     @ParameterizedTest
     @MethodSource
     void visitUnary_unaryMinusErrors_givenNonNumber(Object value) {
-        var token = TokenHelper.get("-");
-        var expression = new Expr.Unary(token, new Expr.Literal(value));
+        var token = t("-");
+        var expression = (Expr.Unary) e(token, value);
 
         try {
             new Interpreter().visitUnaryExpr(expression);
@@ -903,7 +897,7 @@ class InterpreterTest {
      * @param expected Expected result.
      */
     private static void assert_visitUnary(String operator, Object operand, Object expected) {
-        var expression = new Expr.Unary(TokenHelper.get(operator), new Expr.Literal(operand));
+        var expression = (Expr.Unary) e(t(operator), operand);
         assertThat(new Interpreter().visitUnaryExpr(expression), is(equalTo(expected)));
     }
 

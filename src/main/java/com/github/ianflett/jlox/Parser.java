@@ -45,7 +45,7 @@ public class Parser {
     /**
      * Parses statement grammar rule.
      *
-     * <pre>{@link #statement()} -> {@link #printStatement()} | {@link #expressionStatment()}</pre>
+     * <pre>{@link #statement()} -> {@link #printStatement()} | {@link #expressionStatement()}</pre>
      *
      * @return {@link Stmt}.
      */

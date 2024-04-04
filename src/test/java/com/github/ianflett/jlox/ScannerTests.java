@@ -1,6 +1,6 @@
 package com.github.ianflett.jlox;
 
-import static com.github.ianflett.jlox.TokenHelper.EOF_LITERAL;
+import static com.github.ianflett.jlox.TestHelper.*;
 import static com.github.ianflett.jlox.TokenType.*;
 import static com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemErrNormalized;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -65,7 +65,7 @@ public class ScannerTests {
     @MethodSource
     void scanTokens_emitsExpectedToken_whenSourceContainsValidCharacterSequence(
             String source, Token expected) {
-        assert_scanTokens(source, contains(expected, TokenHelper.get(EOF_LITERAL)));
+        assert_scanTokens(source, contains(expected, t(EOF_LEXEME)));
     }
 
     /**
@@ -81,7 +81,7 @@ public class ScannerTests {
                         "(", ")", "{", "}", ":", ",", ".", "-", "+", "?", ";", "*", "!", "!=", "=",
                         "==", "<", "<=", ">", ">=", "/")
                 .stream()
-                .map(i -> arguments(i, TokenHelper.get(i)));
+                .map(i -> arguments(i, t(i)));
     }
 
     /**
@@ -112,7 +112,7 @@ public class ScannerTests {
     @ParameterizedTest(name = "\"{0}\"")
     @MethodSource
     void scanTokens_emitsNothing_whenMultiComment(String source, int line) {
-        assert_scanTokens(source, contains(TokenHelper.withLine(EOF_LITERAL, line)));
+        assert_scanTokens(source, contains(t(line, EOF_LEXEME)));
     }
 
     /**
@@ -147,7 +147,7 @@ public class ScannerTests {
      */
     @Test
     void scanTokens_emitsNothingAndAdvancesLine_whenNewLine() {
-        assert_scanTokens("\n", contains(TokenHelper.adjustLine(EOF_LITERAL, 1)));
+        assert_scanTokens("\n", contains(t(1 + DEFAULT_LINE, EOF_LEXEME)));
     }
 
     /**
@@ -164,7 +164,7 @@ public class ScannerTests {
                 source,
                 contains(
                         new Token(STRING, source, source.substring(1, source.length() - 1), line),
-                        TokenHelper.withLine(EOF_LITERAL, line)));
+                        t(line, EOF_LEXEME)));
     }
 
     /**
@@ -188,11 +188,7 @@ public class ScannerTests {
     @ParameterizedTest
     @ValueSource(strings = {" 1234", "12.34 ", "0.1234", "1234.0"})
     void scanTokens_emitsNumber_whenValidNumber(String source) {
-        assert_scanTokens(
-                source,
-                contains(
-                        new Token(NUMBER, source.trim(), Double.parseDouble(source), 1),
-                        TokenHelper.get(EOF_LITERAL)));
+        assert_scanTokens(source, contains(ts(source.trim())));
     }
 
     /**
@@ -201,12 +197,7 @@ public class ScannerTests {
      */
     @Test
     void scanTokens_emitsExpectedTokens_whenNumberHasLeadingDot() {
-        assert_scanTokens(
-                ".1234",
-                contains(
-                        TokenHelper.get("."),
-                        new Token(NUMBER, "1234", 1234d, 1),
-                        TokenHelper.get(EOF_LITERAL)));
+        assert_scanTokens(".1234", contains(ts(".", "1234")));
     }
 
     /**
@@ -215,12 +206,7 @@ public class ScannerTests {
      */
     @Test
     void scanTokens_emitsExpectedTokens_whenNumberHasTrailingDot() {
-        assert_scanTokens(
-                "1234.",
-                contains(
-                        new Token(NUMBER, "1234", 1234d, 1),
-                        TokenHelper.get("."),
-                        TokenHelper.get(EOF_LITERAL)));
+        assert_scanTokens("1234.", contains(ts("1234", ".")));
     }
 
     /**
@@ -229,13 +215,7 @@ public class ScannerTests {
      */
     @Test
     void scanTokens_emitsExpectedTokens_whenNumberHasTooManyDots() {
-        assert_scanTokens(
-                "1.23.4",
-                contains(
-                        new Token(NUMBER, "1.23", 1.23d, 1),
-                        TokenHelper.get("."),
-                        new Token(NUMBER, "4", 4d, 1),
-                        TokenHelper.get(EOF_LITERAL)));
+        assert_scanTokens("1.23.4", contains(ts("1.23", ".", "4")));
     }
 
     /**
@@ -244,14 +224,7 @@ public class ScannerTests {
      */
     @Test
     void scanTokens_emitsExpectedTokens_whenNumberHasContiguousDots() {
-        assert_scanTokens(
-                "12..34",
-                contains(
-                        new Token(NUMBER, "12", 12d, 1),
-                        TokenHelper.get("."),
-                        TokenHelper.get("."),
-                        new Token(NUMBER, "34", 34d, 1),
-                        TokenHelper.get(EOF_LITERAL)));
+        assert_scanTokens("12..34", contains(ts("12", ".", ".", "34")));
     }
 
     /**
@@ -267,7 +240,7 @@ public class ScannerTests {
                 "super", "this", "true", "var", "while"
             })
     void scanTokens_emitsKeyword_whenValidKeyword(String source) {
-        assert_scanTokens(source, contains(TokenHelper.asArray(source)));
+        assert_scanTokens(source, contains(ts(source)));
     }
 
     /**
@@ -279,9 +252,7 @@ public class ScannerTests {
     @ParameterizedTest
     @ValueSource(strings = {"rand", "outclassed", "form"})
     void scanTokens_emitsIdentifier_whenInvalidKeyword(String source) {
-        assert_scanTokens(
-                source,
-                contains(new Token(IDENTIFIER, source, null, 1), TokenHelper.get(EOF_LITERAL)));
+        assert_scanTokens(source, contains(ts(source)));
     }
 
     /**
@@ -296,5 +267,5 @@ public class ScannerTests {
     }
 
     /** Matcher for empty {@link Token} list. */
-    static Matcher<Iterable<? extends Token>> EMPTY_TOKENS = contains(TokenHelper.get(EOF_LITERAL));
+    static Matcher<Iterable<? extends Token>> EMPTY_TOKENS = contains(ts());
 }
