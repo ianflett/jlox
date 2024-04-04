@@ -1,6 +1,7 @@
 package com.github.ianflett.jlox;
 
 import static com.github.ianflett.jlox.TestHelper.*;
+import static com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemOutNormalized;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -19,7 +20,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 /** Unit tests {@link Interpreter} class. */
 class InterpreterTest {
 
-    // region Binary
+    // region Expr.Binary
 
     // region a == b
 
@@ -726,7 +727,7 @@ class InterpreterTest {
 
     // endregion
 
-    // region Conditional
+    // region Expr.Conditional
 
     /**
      * Tests {@link Interpreter#visitConditionalExpr(Expr.Conditional)} produces then branch given
@@ -760,7 +761,7 @@ class InterpreterTest {
 
     // endregion
 
-    // region Grouping
+    // region Expr.Grouping
 
     /**
      * Tests {@link Interpreter#visitGroupingExpr(Expr.Grouping)} interprets {@link Expr.Literal}
@@ -777,7 +778,7 @@ class InterpreterTest {
 
     // endregion
 
-    // region Literal
+    // region Expr.Literal
 
     /**
      * Tests {@link Interpreter#visitLiteralExpr(Expr.Literal)} interprets {@link Expr.Literal}
@@ -803,7 +804,7 @@ class InterpreterTest {
 
     // endregion
 
-    // region Unary
+    // region Expr.Unary
 
     /**
      * Tests {@link Interpreter#visitUnaryExpr(Expr.Unary)} interprets {@link Expr.Unary} not as
@@ -899,6 +900,37 @@ class InterpreterTest {
     private static void assert_visitUnary(String operator, Object operand, Object expected) {
         var expression = (Expr.Unary) e(t(operator), operand);
         assertThat(new Interpreter().visitUnaryExpr(expression), is(equalTo(expected)));
+    }
+
+    // endregion
+
+    // region Stmt.Print
+
+    @ParameterizedTest
+    @MethodSource
+    void visitPrintStmt_outputsExpressionResult_givenExpression(Expr expression, String expected)
+            throws Exception {
+        var output =
+                tapSystemOutNormalized(
+                        () -> new Interpreter().visitPrintStmt(new Stmt.Print(expression)));
+        assertThat(output, is(equalTo(expected + "\n")));
+    }
+
+    /**
+     * Data source for {@link #visitPrintStmt_outputsExpressionResult_givenExpression(Expr, String)}
+     * tests.
+     *
+     * @return Test argument data.
+     */
+    private static Stream<Arguments> visitPrintStmt_outputsExpressionResult_givenExpression() {
+        return Stream.of(
+                arguments(e(null), "nil"),
+                arguments(e(3, t("=="), 2), "false"),
+                arguments(e(3, t("!="), 2), "true"),
+                arguments(e(3, t("+"), 2), "5"),
+                arguments(e(1, t("/"), 2), "0.5"),
+                arguments(e(""), ""),
+                arguments(e("foo", t("+"), "bar"), "foobar"));
     }
 
     // endregion
