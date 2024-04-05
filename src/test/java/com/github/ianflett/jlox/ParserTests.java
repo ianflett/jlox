@@ -6,6 +6,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -21,7 +22,10 @@ public class ParserTests {
     /** Tests {@link Parser#parse()} returns {@code null} when {@link Token} unrecognised. */
     @Test
     void parse_returnsNull_whenTokenUnrecognised() throws Exception {
-        assert_parseError(tz("}", ";"), "[line 1] Error at '}': Expect expression.");
+        var expected = new ArrayList<Stmt>();
+        expected.add(null);
+
+        assert_parseError(tz("}", ";"), expected, "[line 1] Error at '}': Expect expression.");
     }
 
     /**
@@ -160,6 +164,7 @@ public class ParserTests {
             throws Exception {
         assert_parseError(
                 tz(token, "1", token, "2", ";"),
+                List.of(new Stmt.Expression(null)),
                 String.format(
                         "[line 1] Error at '%s': Missing left hand operand for %s.", token, type));
     }
@@ -265,24 +270,18 @@ public class ParserTests {
      * Asserts given tokens produces an error.
      *
      * @param tokens {@link Token}s.
+     * @param expectedResult Expected result.
      * @param expectedErrorMessage Expected error message.
+     * @throws Exception Unable to read from standard error.
      */
-    private static void assert_parseError(List<Token> tokens, String expectedErrorMessage)
+    private static void assert_parseError(
+            List<Token> tokens, Object expectedResult, String expectedErrorMessage)
             throws Exception {
-        AtomicReference<List<Stmt>> actual = new AtomicReference<>();
-        AtomicReference<List<Stmt>> expected = new AtomicReference<>();
+        var actual = new AtomicReference<List<Stmt>>();
 
-        String error =
-                tapSystemErrNormalized(
-                        () -> {
-                            try {
-                                actual.set(new Parser(tokens).parse());
-                                expected.set(List.of(new Stmt.Expression(null)));
-                            } catch (Parser.ParseError ignored) {
-                            }
-                        });
+        String error = tapSystemErrNormalized(() -> actual.set(new Parser(tokens).parse()));
 
-        assertThat(actual.get(), is(equalTo(expected.get())));
+        assertThat(actual.get(), is(equalTo(expectedResult)));
         assertThat(error, is(equalTo(expectedErrorMessage + "\n")));
     }
 }

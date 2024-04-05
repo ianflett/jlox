@@ -6,6 +6,9 @@ import java.util.function.BiFunction;
 /** Interprets abstract syntax tree. */
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
+    /** {@link Environment} for storing bound variables. */
+    private final Environment environment = new Environment();
+
     /**
      * Interprets {@link List} of statements.
      *
@@ -26,6 +29,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
      *
      * @param expr {@link Expr}ession to process.
      * @return Value of expression.
+     * @throws RuntimeError Division by zero or invalid operand types used.
      */
     @Override
     public Object visitBinaryExpr(Expr.Binary expr) {
@@ -125,6 +129,17 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     /**
+     * Performs variable expression.
+     *
+     * @param expr {@link Expr}ession to process.
+     * @return Value of expression.
+     */
+    @Override
+    public Object visitVariableExpr(Expr.Variable expr) {
+        return environment.get(expr.name);
+    }
+
+    /**
      * Performs standard comparison.
      *
      * @param left Left operand.
@@ -132,6 +147,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
      * @param right Right operand.
      * @param operation Comparison.
      * @return {@code true} if comparison is correct; {@code false} otherwise.
+     * @throws RuntimeError Invalid operand types used.
      */
     private static boolean compare(
             Object left,
@@ -170,6 +186,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
      *
      * @param operator Operator being applied.
      * @param operand Operand to check.
+     * @throws RuntimeError Invalid operand types used.
      */
     private static void checkNumberOperand(Token operator, Object operand) {
         if (operand instanceof Double) return;
@@ -182,6 +199,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
      * @param operator Operator being applied.
      * @param left Operand to check.
      * @param right Operand to check.
+     * @throws RuntimeError Invalid operand types used.
      */
     private static void checkNumberOperands(Token operator, Object left, Object right) {
         if (left instanceof Double && right instanceof Double) return;
@@ -220,7 +238,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     /**
-     * Processes print statement.
+     * Processes {@code print} statement.
      *
      * @param stmt {@link Stmt} to process.
      * @return {@code null}.
@@ -229,6 +247,23 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     public Void visitPrintStmt(Stmt.Print stmt) {
         var value = evaluate(stmt.expression);
         System.out.println(stringify(value));
+        return null;
+    }
+
+    /**
+     * Processes {@code var} statement.
+     *
+     * @param stmt {@link Stmt} to process.
+     * @return {@code null}.
+     */
+    @Override
+    public Void visitVarStmt(Stmt.Var stmt) {
+        Object value = null;
+        if (null != stmt.initializer) {
+            value = evaluate(stmt.initializer);
+        }
+
+        environment.define(stmt.name.lexeme(), value);
         return null;
     }
 

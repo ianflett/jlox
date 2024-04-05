@@ -47,6 +47,17 @@ abstract class AstPrinter implements Expr.Visitor<String> {
      */
     public abstract String visitUnaryExpr(Expr.Unary expr);
 
+    /**
+     * Represents variable expression.
+     *
+     * @param expr {@link Expr}ession to represent.
+     * @return {@link String} representation of expression.
+     */
+    @Override
+    public String visitVariableExpr(Expr.Variable expr) {
+        return expr.name.lexeme();
+    }
+
     /** Represents abstract syntax tree in Lisp form. */
     static class Lisp extends AstPrinter {
 
