@@ -21,10 +21,11 @@ class TokenTests {
      */
     @Test
     void constructor_throwsIllegalArgumentException_whenLexemeIsNull() {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> new Token(TokenType.EOF, null, null, 0),
-                "Lexeme must not be null");
+        var exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> new Token(TokenType.EOF, null, null, 0));
+        assertThat(exception.getMessage(), is(equalTo("Lexeme must not be null")));
     }
 
     /**
@@ -33,10 +34,11 @@ class TokenTests {
      */
     @Test
     void constructor_throwsIllegalArgumentException_whenLineIsNegative() {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> new Token(TokenType.EOF, "", null, -1),
-                "Line number must not be negative");
+        var exception =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () -> new Token(TokenType.EOF, "", null, -1));
+        assertThat(exception.getMessage(), is(equalTo("Line number must not be negative")));
     }
 
     /**

@@ -26,10 +26,8 @@ public class ScannerTests {
      */
     @Test
     void constructor_throwsIllegalArgumentException_whenSourceIsNull() {
-        assertThrows(
-                IllegalArgumentException.class,
-                () -> new Scanner(null),
-                "Source text must be defined.");
+        var exception = assertThrows(IllegalArgumentException.class, () -> new Scanner(null));
+        assertThat(exception.getMessage(), is(equalTo("Source text must be defined.")));
     }
 
     /**

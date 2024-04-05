@@ -5,6 +5,7 @@ import static com.github.stefanbirkner.systemlambda.SystemLambda.tapSystemOutNor
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
@@ -904,8 +905,52 @@ class InterpreterTest {
 
     // endregion
 
+    // region Expr.Variable
+
+    /**
+     * Tests {@link Interpreter#visitVariableExpr(Expr.Variable)} throws {@link RuntimeError} when
+     * requesting undeclared variable.
+     */
+    @Test
+    void visitVariableExpr_throwsRuntimeError_givenUndeclaredVariable() {
+        var exception =
+                assertThrows(
+                        RuntimeError.class,
+                        () ->
+                                new Interpreter()
+                                        .visitVariableExpr((Expr.Variable) e(t("noVariable"))));
+        assertThat(exception.getMessage(), is(equalTo("Undefined variable 'noVariable'.")));
+    }
+
+    /**
+     * Tests {@link Interpreter#visitVariableExpr(Expr.Variable)} interprets {@link Expr.Variable}
+     * by returning {@code value} bound to {@code name}.
+     *
+     * @param name Variable name.
+     * @param value Expected value.
+     */
+    @ParameterizedTest
+    @MethodSource("variableDefinitions")
+    void visitVariableExpr_returnsValue_givenValueBoundToName(String name, Object value) {
+        var environment = new Environment();
+        environment.define(name, value);
+
+        assertThat(
+                new Interpreter(environment).visitVariableExpr((Expr.Variable) e(t(name))),
+                is(equalTo(value)));
+    }
+
+    // endregion
+
     // region Stmt.Print
 
+    /**
+     * Tests {@link Interpreter#visitPrintStmt(Stmt.Print)} interprets {@link Stmt.Print} by
+     * producing expected output.
+     *
+     * @param expression {@link Expr}ession to print.
+     * @param expected Expected output.
+     */
     @ParameterizedTest
     @MethodSource
     void visitPrintStmt_outputsExpressionResult_givenExpression(Expr expression, String expected)
@@ -934,4 +979,58 @@ class InterpreterTest {
     }
 
     // endregion
+
+    // region Stmt.Var
+
+    /**
+     * Tests {@link Interpreter#visitVarStmt(Stmt.Var)} interprets {@link Stmt.Var} by binding
+     * {@code value} to {@code name}.
+     *
+     * @param name Variable name.
+     * @param value Expected value.
+     */
+    @ParameterizedTest
+    @MethodSource("variableDefinitions")
+    void visitVarStmt_bindsVariable_givenNameAndValue(String name, Object value) {
+        var token = t(name);
+        var environment = new Environment();
+        new Interpreter(environment).visitVarStmt(new Stmt.Var(token, e(value)));
+        assertThat(environment.get(token), is(equalTo(value)));
+    }
+
+    /**
+     * Tests {@link Interpreter#visitVarStmt(Stmt.Var)} interprets {@link Stmt.Var} by rebinding
+     * {@code value} to {@code name}.
+     *
+     * @param name Variable name.
+     * @param value Expected value.
+     */
+    @ParameterizedTest
+    @MethodSource("variableDefinitions")
+    void visitVarStmt_rebindsVariable_givenNameAndValue(String name, Object value) {
+        var token = t(name);
+        var oldValue = -2d;
+        var environment = new Environment();
+        var interpreter = new Interpreter(environment);
+        interpreter.visitVarStmt(new Stmt.Var(token, e(oldValue)));
+        assertThat(environment.get(token), is(equalTo(oldValue)));
+        interpreter.visitVarStmt(new Stmt.Var(token, e(value)));
+        assertThat(environment.get(token), is(equalTo(value)));
+    }
+
+    // endregion
+
+    /**
+     * Data source for {@link #visitVariableExpr_returnsValue_givenValueBoundToName(String, Object)}
+     * and {@link #visitVarStmt_bindsVariable_givenNameAndValue(String, Object)} tests.
+     *
+     * @return Test argument data.
+     */
+    static Stream<Arguments> variableDefinitions() {
+        return Stream.of(
+                arguments("myBoolean", false),
+                arguments("myNothing", null),
+                arguments("myNumber", 1d),
+                arguments("myString", "Hello world!"));
+    }
 }

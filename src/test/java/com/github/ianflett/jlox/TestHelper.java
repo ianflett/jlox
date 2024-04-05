@@ -164,7 +164,9 @@ public class TestHelper {
      * @return {@link Expr.Grouping}.
      */
     static Expr e(Object value) {
-        return new Expr.Grouping(eValue(value));
+        return value instanceof Token
+                ? new Expr.Variable((Token) value)
+                : new Expr.Grouping(eValue(value));
     }
 
     /**

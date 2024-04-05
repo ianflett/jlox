@@ -7,7 +7,21 @@ import java.util.function.BiFunction;
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     /** {@link Environment} for storing bound variables. */
-    private final Environment environment = new Environment();
+    private final Environment environment;
+
+    /** Constructs new {@link Interpreter}. */
+    Interpreter() {
+        this(new Environment());
+    }
+
+    /**
+     * Constructs new {@link Interpreter} for unit testing.
+     *
+     * @param environment Environment to use.
+     */
+    Interpreter(Environment environment) {
+        this.environment = environment;
+    }
 
     /**
      * Interprets {@link List} of statements.
