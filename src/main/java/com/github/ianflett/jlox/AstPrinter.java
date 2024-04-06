@@ -16,6 +16,14 @@ abstract class AstPrinter implements Expr.Visitor<String> {
     }
 
     /**
+     * Represents assignment expression.
+     *
+     * @param expr {@link Expr}ession to represent.
+     * @return {@link String} representation of expression.
+     */
+    public abstract String visitAssignExpr(Expr.Assign expr);
+
+    /**
      * Represents binary expression.
      *
      * @param expr {@link Expr}ession to represent.
@@ -60,6 +68,12 @@ abstract class AstPrinter implements Expr.Visitor<String> {
 
     /** Represents abstract syntax tree in Lisp form. */
     static class Lisp extends AstPrinter {
+
+        /** {@inheritDoc} */
+        @Override
+        public String visitAssignExpr(Expr.Assign expr) {
+            return parenthesize("=", new Expr.Literal(expr.name.lexeme()), expr.value);
+        }
 
         /** {@inheritDoc} */
         @Override
@@ -118,6 +132,12 @@ abstract class AstPrinter implements Expr.Visitor<String> {
 
         /** {@inheritDoc} */
         @Override
+        public String visitAssignExpr(Expr.Assign expr) {
+            return reverseNotation("=", new Expr.Literal(expr.name.lexeme()), expr.value);
+        }
+
+        /** {@inheritDoc} */
+        @Override
         public String visitBinaryExpr(Expr.Binary expr) {
             return reverseNotation(expr.operator.lexeme(), expr.left, expr.right);
         }
@@ -172,6 +192,16 @@ abstract class AstPrinter implements Expr.Visitor<String> {
 
         /** Stores the current indents. */
         private final Stack<String> indents = new Stack<>();
+
+        /** {@inheritDoc} */
+        @Override
+        public String visitAssignExpr(Expr.Assign expr) {
+            return String.format(
+                    "%s=%n%s%s",
+                    processIndent(true),
+                    processChildNode("├", new Expr.Literal(expr.name.lexeme())),
+                    processChildNode("└", expr.value));
+        }
 
         /** {@inheritDoc} */
         @Override

@@ -128,12 +128,38 @@ public class Parser {
     /**
      * Parses a sequence point grammar rule.
      *
-     * <pre>{@link #sequence()} -> {@link #conditional()} ( "," {@link #conditional()} )*</pre>
+     * <pre>{@link #sequence()} -> {@link #assignment()} ( "," {@link #assignment()} )*</pre>
      *
-     * @return {@link Expr}ession or {@link #conditional()}.
+     * @return {@link Expr}ession or {@link #assignment()}.
      */
     private Expr sequence() {
-        return parseBinary(this::conditional, COMMA);
+        return parseBinary(this::assignment, COMMA);
+    }
+
+    /**
+     * Parses assignment grammar rule.
+     *
+     * <pre>{@link #assignment()} -> IDENTIFIER '=' {@link #assignment()} | {@link #conditional()}
+     * </pre>
+     *
+     * @return {@link Expr}ession or {@link #equality()}.
+     */
+    private Expr assignment() {
+        var expr = conditional();
+
+        if (match(EQUAL)) {
+            var equals = previous();
+            var value = assignment();
+
+            if (expr instanceof Expr.Variable) {
+                var name = ((Expr.Variable) expr).name;
+                return new Expr.Assign(name, value);
+            }
+
+            error(equals, "Invalid assignment target.");
+        }
+
+        return expr;
     }
 
     /**

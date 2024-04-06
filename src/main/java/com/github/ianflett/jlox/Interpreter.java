@@ -282,6 +282,19 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     }
 
     /**
+     * Processes assignment statement.
+     *
+     * @param expr {@link Stmt} to process.
+     * @return {@code null}.
+     */
+    @Override
+    public Object visitAssignExpr(Expr.Assign expr) {
+        var value = evaluate(expr.value);
+        environment.assign(expr.name, value);
+        return value;
+    }
+
+    /**
      * Whether value is {@code true} or {@code false}.
      *
      * @param object Value to evaluate.
