@@ -29,6 +29,19 @@ public class ParserTests {
     }
 
     /**
+     * Tests {@link Parser#parse()} generates {@link Expr}ession where assignment has precedence
+     * over sequence.
+     */
+    @Test
+    void parse_assignHasHigherPrecedenceThanSequence_givenSequenceAndAssignment() {
+        var tokens = tz("a", "=", "2", ",", "3", ";");
+
+        var expected = new Stmt[] {new Stmt.Expression(e(e(t("a"), 2), t(","), 3))};
+
+        assert_parse(tokens, contains(expected));
+    }
+
+    /**
      * Tests {@link Parser#parse()} generates {@link Expr}ession where left operator has precedence
      * between two binary operators of same left-associative grammar.
      *
@@ -71,16 +84,13 @@ public class ParserTests {
 
     /**
      * Tests {@link Parser#parse()} generates {@link Expr}ession where conditional has higher
-     * precedence than sequence. However, note an implicit grouping for the middle term.
+     * precedence than assignment. However, note an implicit grouping for the middle term.
      */
     @Test
-    void parse_conditionalHasHigherPrecedenceThanSequence_givenSequenceAndConditional() {
-        var tokens = tz("1", ",", "2", "?", "3", ",", "1", ":", "2", ",", "3", ";");
+    void parse_conditionalHasHigherPrecedenceThanAssignment_givenAssignmentAndConditional() {
+        var tokens = tz("a", "=", "1", "?", "b", "=", "2", ":", "3", ";");
 
-        var expected =
-                new Stmt[] {
-                    new Stmt.Expression(e(e(1, t(","), e(2, e(3, t(","), 1), 2)), t(","), 3))
-                };
+        var expected = new Stmt[] {new Stmt.Expression(e(t("a"), e(1, e(t("b"), 2), 3)))};
 
         assert_parse(tokens, contains(expected));
     }
@@ -208,6 +218,41 @@ public class ParserTests {
         var expected = new Stmt[] {new Stmt.Expression(e(e(t("-"), 1), t("*"), 2))};
 
         assert_parse(tokens, contains(expected));
+    }
+
+    @ParameterizedTest
+    @MethodSource
+    void parse_returnsPrimary_givenPrimary(String primary, Object expectedValue) {
+        var tokens = tz(primary, ";");
+
+        var expectedExpression =
+                expectedValue instanceof Token ? e(expectedValue) : new Expr.Literal(expectedValue);
+        var expected = new Stmt[] {new Stmt.Expression(expectedExpression)};
+
+        assert_parse(tokens, contains(expected));
+    }
+
+    private static Stream<Arguments> parse_returnsPrimary_givenPrimary() {
+        return Stream.of(
+                arguments("nil", null),
+                arguments("false", false),
+                arguments("true", true),
+                arguments("0", 0d),
+                arguments("1", 1d),
+                arguments("\"\"", ""),
+                arguments("\"a\"", "a"),
+                arguments("a", t("a")));
+    }
+
+    @Test
+    void parse_throwsRuntimeError_givenUnterminatedParentheses() throws Exception {
+        var expected = new ArrayList<Stmt>();
+        expected.add(null);
+
+        assert_parseError(
+                tz("(", "1", "+", "2"),
+                expected,
+                "[line 1] Error at end: Expect ')' after expression.");
     }
 
     /**

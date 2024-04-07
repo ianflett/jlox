@@ -122,7 +122,9 @@ public class TestHelper {
         } catch (IllegalArgumentException ignored) {
         }
 
-        return new Token(IDENTIFIER, lexeme, null, DEFAULT_LINE);
+        return '"' == lexeme.charAt(0)
+                ? new Token(STRING, lexeme, lexeme.substring(1, lexeme.length() - 1), DEFAULT_LINE)
+                : new Token(IDENTIFIER, lexeme, null, DEFAULT_LINE);
     }
 
     // endregion
@@ -147,21 +149,23 @@ public class TestHelper {
     }
 
     /**
-     * {@link Expr.Unary} construction.
+     * {@link Expr.Assign} or {@link Expr.Unary} construction.
      *
-     * @param operator Operator.
-     * @param value Operand.
+     * @param left Operator or left operand.
+     * @param right Right operand.
      * @return {@link Expr.Unary}.
      */
-    static Expr e(Token operator, Object value) {
-        return new Expr.Unary(operator, eValue(value));
+    static Expr e(Token left, Object right) {
+        return IDENTIFIER == left.type()
+                ? new Expr.Assign(left, eValue(right))
+                : new Expr.Unary(left, eValue(right));
     }
 
     /**
-     * {@link Expr.Grouping} construction.
+     * {@link Expr.Grouping} or {@link Expr.Variable} construction.
      *
      * @param value Operand.
-     * @return {@link Expr.Grouping}.
+     * @return {@link Expr.Grouping} or {@link Expr.Variable}.
      */
     static Expr e(Object value) {
         return value instanceof Token

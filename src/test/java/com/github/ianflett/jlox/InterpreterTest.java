@@ -21,6 +21,37 @@ import org.junit.jupiter.params.provider.ValueSource;
 /** Unit tests {@link Interpreter} class. */
 class InterpreterTest {
 
+    // region Expr.Assign
+
+    /**
+     * Tests {@link Interpreter#visitAssignExpr(Expr.Assign)} throws {@link RuntimeError} when
+     * assigning undeclared variable.
+     */
+    @Test
+    void visitAssertExpr_throwsRuntimeError_givenUndeclaredVariable() {
+        var exception =
+                assertThrows(
+                        RuntimeError.class,
+                        () ->
+                                new Interpreter()
+                                        .visitAssignExpr((Expr.Assign) e(t("noVariable"), 1)));
+        assertThat(exception.getMessage(), is(equalTo("Undefined variable 'noVariable'.")));
+    }
+
+    @ParameterizedTest
+    @MethodSource("variableDefinitions")
+    void visitAssertExpr_bindsVariable_givenNameAndValue(String name, Object value) {
+        var environment = new Environment();
+        environment.define(name, null);
+
+        assertThat(
+                new Interpreter(environment).visitAssignExpr((Expr.Assign) e(t(name), value)),
+                is(equalTo(value)));
+        assertThat(environment.get(t(name)), is(equalTo(value)));
+    }
+
+    // endregion
+
     // region Expr.Binary
 
     // region a == b
