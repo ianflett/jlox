@@ -5,8 +5,25 @@ import java.util.Map;
 
 /** Stores variable values. */
 public class Environment {
+    /** Stores outer scope. */
+    private final Environment enclosing;
+
     /** Stores values bound to variables. */
     private final Map<String, Object> values = new HashMap<>();
+
+    /** Constructs {@link Environment}. */
+    public Environment() {
+        this(null);
+    }
+
+    /**
+     * Constructs {@link Environment}.
+     *
+     * @param enclosing Outer scope.
+     */
+    public Environment(final Environment enclosing) {
+        this.enclosing = enclosing;
+    }
 
     /**
      * Retrieves value bound to name.
@@ -16,8 +33,13 @@ public class Environment {
      * @throws RuntimeError Name undefined.
      */
     Object get(Token name) {
-        assertDefined(name);
-        return values.get(name.lexeme());
+        if (values.containsKey(name.lexeme())) {
+            return values.get(name.lexeme());
+        }
+
+        if (null != enclosing) return enclosing.get(name);
+
+        throw new RuntimeError(name, "Undefined variable '" + name.lexeme() + "'.");
     }
 
     /**
@@ -28,8 +50,17 @@ public class Environment {
      * @throws RuntimeError Name undefined.
      */
     void assign(Token name, Object value) {
-        assertDefined(name);
-        define(name.lexeme(), value);
+        if (values.containsKey(name.lexeme())) {
+            values.put(name.lexeme(), value);
+            return;
+        }
+
+        if (null != enclosing) {
+            enclosing.assign(name, value);
+            return;
+        }
+
+        throw new RuntimeError(name, "Undefined variable '" + name.lexeme() + "'.");
     }
 
     /**
@@ -40,15 +71,5 @@ public class Environment {
      */
     void define(String name, Object value) {
         values.put(name, value);
-    }
-
-    /**
-     * Asserts a variable is defined.
-     *
-     * @param name Definition name.
-     */
-    private void assertDefined(Token name) {
-        if (!values.containsKey(name.lexeme()))
-            throw new RuntimeError(name, "Undefined variable '" + name.lexeme() + "'.");
     }
 }

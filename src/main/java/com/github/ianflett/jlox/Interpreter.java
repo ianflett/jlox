@@ -7,7 +7,7 @@ import java.util.function.BiFunction;
 public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
 
     /** {@link Environment} for storing bound variables. */
-    private final Environment environment;
+    private Environment environment;
 
     /** Constructs new {@link Interpreter}. */
     Interpreter() {
@@ -233,10 +233,40 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     /**
      * Calls statement's {@link Stmt.Visitor} implementation.
      *
-     * @param stmt {@link Stmt}.
+     * @param stmt {@link Stmt} to execute.
      */
     private void execute(Stmt stmt) {
         stmt.accept(this);
+    }
+
+    /**
+     * Calls statements' {@link Stmt.Visitor} implementations.
+     *
+     * @param statements {@link Stmt}s to execute.
+     * @param environment New scope.
+     */
+    private void executeBlock(List<Stmt> statements, Environment environment) {
+        Environment previous = this.environment;
+        try {
+            this.environment = environment;
+
+            for (var statement : statements) {
+                execute(statement);
+            }
+        } finally {
+            this.environment = previous;
+        }
+    }
+
+    /**
+     * Processes block statement.
+     *
+     * @param stmt {@link Stmt} to process.
+     * @return {@code null}.
+     */
+    public Void visitBlockStmt(Stmt.Block stmt) {
+        executeBlock(stmt.statements, new Environment(environment));
+        return null;
     }
 
     /**

@@ -7,7 +7,7 @@ plugins {
 }
 
 group = 'com.github.ianflett.jlox'
-version = '0.8.2.1'
+version = '0.8.3.0'
 
 apply from: "$rootDir/gradle/details.gradle"
 apply from: "$rootDir/gradle/generate-ast.gradle"
@@ -42,6 +42,7 @@ defineAst {
             'Variable': ['Token name']
         ],
         "${project.group}.Stmt": [
+            'Block': ['List<Stmt> statements'],
             'Expression': ['Expr expression'],
             'Print': ['Expr expression'],
             'Var': ['Token name', 'Expr initializer']
