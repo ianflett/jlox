@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
+import java.util.ArrayList;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 import java.util.stream.Stream.Builder;
@@ -969,6 +970,50 @@ class InterpreterTest {
         assertThat(
                 new Interpreter(environment).visitVariableExpr((Expr.Variable) e(t(name))),
                 is(equalTo(value)));
+    }
+
+    // endregion
+
+    // region Stmt.Block
+
+    /**
+     * Tests {@link Interpreter#visitBlockStmt(Stmt.Block)} honours scope after processing block.
+     *
+     * <p>Creates {@link Environment} with three definitions:
+     *
+     * <ul>
+     *   <li>{@code a} as {@code 1.0}
+     *   <li>{@code b} as {@code 2.0}
+     *   <li>{@code c} as {@code 3.0}
+     * </ul>
+     *
+     * <p>New {@link Stmt.Block} assigns {@code 4.0} to {@code b}, redefines {@code c}, then defines
+     * {@code d} before reassigning it. Once processed, only alteration to {@code b} remains.
+     */
+    @Test
+    void visitBlockStmt_honorsScope_afterProcessingBlock() {
+
+        var environment = new Environment();
+        environment.define("a", 1d);
+        environment.define("b", 2d);
+        environment.define("c", 3d);
+        var interpreter = new Interpreter(environment);
+
+        var inner = new ArrayList<Stmt>();
+        inner.add(new Stmt.Expression(e(t("b"), e(4))));
+        inner.add(new Stmt.Var(t("c"), e(5)));
+        inner.add(new Stmt.Var(t("d"), e(6)));
+        inner.add(new Stmt.Expression(e(t("d"), e(7))));
+
+        var block = new Stmt.Block(inner);
+        interpreter.visitBlockStmt(block);
+
+        assertThat(environment.get(t("a")), is(equalTo(1d)));
+        assertThat(environment.get(t("b")), is(equalTo(4d)));
+        assertThat(environment.get(t("c")), is(equalTo(3d)));
+
+        var error = assertThrows(RuntimeError.class, () -> environment.get(t("d")));
+        assertThat(error.getMessage(), is(equalTo("Undefined variable 'd'.")));
     }
 
     // endregion

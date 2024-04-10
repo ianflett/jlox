@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.params.provider.Arguments.arguments;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Stream;
@@ -19,13 +20,51 @@ import org.junit.jupiter.params.provider.MethodSource;
 /** Unit tests {@link Parser} class. */
 public class ParserTests {
 
-    /** Tests {@link Parser#parse()} returns {@code null} when {@link Token} unrecognised. */
+    /** Tests {@link Parser#parse()} generates {@link Stmt.Print} given {@code print} keyword and {@link Expr}ression. */
     @Test
-    void parse_returnsNull_whenTokenUnrecognised() throws Exception {
-        var expected = new ArrayList<Stmt>();
-        expected.add(null);
+    void parse_returnsPrintStatement_givenPrintKeywordAndExpression() {
+        var tokens = tz("print", "\"Hello World\"", ";");
 
-        assert_parseError(tz("}", ";"), expected, "[line 1] Error at '}': Expect expression.");
+        var expected = new Stmt[] {new Stmt.Print(new Expr.Literal("Hello World"))};
+
+        assert_parse(tokens, contains(expected));
+    }
+
+    /** Tests {@link Parser#parse()} generates {@link Stmt.Print} given {@code print} keyword no {@link Expr}ression. */
+    @Test
+    void parse_throwsRuntimeErrorAndReturnsNull_givenPrintKeywordAndNoExpression() throws Exception {
+        assert_parseError(
+            tz("print", ";"), NULL_STMT_LIST, "[line 1] Error at ';': Expect expression.");
+    }
+
+    /** Tests {@link Parser#parse()} generates {@link Stmt.Block} given curley braces. */
+    @Test
+    void parse_returnsBlockStatement_givenCurlyBraces() {
+        var tokens = tz("{", "}");
+
+        var expected = new Stmt[] {new Stmt.Block(new ArrayList<>())};
+
+        assert_parse(tokens, contains(expected));
+    }
+
+    /**
+     * Tests {@link Parser#parse()} produces {@link RuntimeError} and returns {@code null} when
+     * {@link Token} unrecognised.
+     */
+    @Test
+    void parse_throwsRuntimeErrorAndReturnsNull_givenNoRightCurlyBrace() throws Exception {
+        assert_parseError(
+                tz("{"), NULL_STMT_LIST, "[line 1] Error at end: Expect '}' after block.");
+    }
+
+    /**
+     * Tests {@link Parser#parse()} produces {@link RuntimeError} and returns {@code null} when
+     * {@link Token} unrecognised.
+     */
+    @Test
+    void parse_throwsRuntimeErrorAndReturnsNull_whenTokenUnrecognised() throws Exception {
+        assert_parseError(
+                tz("}", ";"), NULL_STMT_LIST, "[line 1] Error at '}': Expect expression.");
     }
 
     /**
@@ -246,12 +285,9 @@ public class ParserTests {
 
     @Test
     void parse_throwsRuntimeError_givenUnterminatedParentheses() throws Exception {
-        var expected = new ArrayList<Stmt>();
-        expected.add(null);
-
         assert_parseError(
                 tz("(", "1", "+", "2"),
-                expected,
+                NULL_STMT_LIST,
                 "[line 1] Error at end: Expect ')' after expression.");
     }
 
@@ -329,4 +365,6 @@ public class ParserTests {
         assertThat(actual.get(), is(equalTo(expectedResult)));
         assertThat(error, is(equalTo(expectedErrorMessage + "\n")));
     }
+
+    private static final List<Stmt> NULL_STMT_LIST = Collections.singletonList(null);
 }

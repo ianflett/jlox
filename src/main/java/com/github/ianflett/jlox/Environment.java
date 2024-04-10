@@ -9,11 +9,11 @@ public class Environment {
     private final Environment enclosing;
 
     /** Stores values bound to variables. */
-    private final Map<String, Object> values = new HashMap<>();
+    private final Map<String, Object> values;
 
     /** Constructs {@link Environment}. */
     public Environment() {
-        this(null);
+        this(null, new HashMap<>());
     }
 
     /**
@@ -22,7 +22,27 @@ public class Environment {
      * @param enclosing Outer scope.
      */
     public Environment(final Environment enclosing) {
+        this(enclosing, new HashMap<>());
+    }
+
+    /**
+     * Constructs {@link Environment} for unit testing.
+     *
+     * @param values Stores bound variables.
+     */
+    Environment(final Map<String, Object> values) {
+        this(null, values);
+    }
+
+    /**
+     * Constructs {@link Environment} for unit testing.
+     *
+     * @param enclosing Outer scope.
+     * @param values Stores bound variables.
+     */
+    Environment(final Environment enclosing, final Map<String, Object> values) {
         this.enclosing = enclosing;
+        this.values = values;
     }
 
     /**
