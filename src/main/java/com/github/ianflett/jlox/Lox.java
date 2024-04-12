@@ -75,7 +75,12 @@ public final class Lox {
                 System.out.print("> ");
                 var line = reader.readLine();
                 if (null == line) break;
-                run(line);
+                try {
+                    run(line);
+                } catch (Parser.ParseError ignored) {
+                } catch (RuntimeError error) {
+                    System.err.println(error.getMessage());
+                }
                 hadError = false;
             }
         }
