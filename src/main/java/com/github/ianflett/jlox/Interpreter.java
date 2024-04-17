@@ -9,6 +9,9 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
     /** {@link Environment} for storing bound variables. */
     private Environment environment;
 
+    /** Stores uninitialised indicator. */
+    static final Object UNINITIALIZED = new Object();
+
     /** Constructs new {@link Interpreter}. */
     Interpreter() {
         this(new Environment());
@@ -150,7 +153,12 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
      */
     @Override
     public Object visitVariableExpr(Expr.Variable expr) {
-        return environment.get(expr.name);
+        var value = environment.get(expr.name);
+        if (value == UNINITIALIZED)
+            throw new RuntimeError(
+                    expr.name, "Uninitialized variable '" + expr.name.lexeme() + "'.");
+
+        return value;
     }
 
     /**
@@ -303,7 +311,7 @@ public class Interpreter implements Expr.Visitor<Object>, Stmt.Visitor<Void> {
      */
     @Override
     public Void visitVarStmt(Stmt.Var stmt) {
-        Object value = null;
+        Object value = UNINITIALIZED;
         if (null != stmt.initializer) {
             value = evaluate(stmt.initializer);
         }

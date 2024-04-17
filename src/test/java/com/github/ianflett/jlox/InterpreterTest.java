@@ -955,6 +955,26 @@ class InterpreterTest {
     }
 
     /**
+     * Tests {@link Interpreter#visitVariableExpr(Expr.Variable)} throws {@link RuntimeError} when
+     * requesting uninitialized variable.
+     */
+    @Test
+    void visitVariableExpr_throwsRuntimeError_givenUninitializedVariable() {
+        var variable = "notInitialized";
+        var environment = new Environment();
+        environment.define(variable, Interpreter.UNINITIALIZED);
+
+        var exception =
+                assertThrows(
+                        RuntimeError.class,
+                        () ->
+                                new Interpreter(environment)
+                                        .visitVariableExpr((Expr.Variable) e(t(variable))));
+        assertThat(
+                exception.getMessage(), is(equalTo("Uninitialized variable '" + variable + "'.")));
+    }
+
+    /**
      * Tests {@link Interpreter#visitVariableExpr(Expr.Variable)} interprets {@link Expr.Variable}
      * by returning {@code value} bound to {@code name}.
      *
@@ -1057,6 +1077,21 @@ class InterpreterTest {
     // endregion
 
     // region Stmt.Var
+
+    /**
+     * Tests {@link Interpreter#visitVarStmt(Stmt.Var)} interprets {@link Stmt.Var} by declaring
+     * {@code name}.
+     *
+     * @param name Variable name.
+     */
+    @ParameterizedTest
+    @MethodSource("variableDefinitions")
+    void visitVarStmt_declaresVariable_givenName(String name) {
+        var token = t(name);
+        var environment = new Environment();
+        new Interpreter(environment).visitVarStmt(new Stmt.Var(token, null));
+        assertThat(environment.get(token), is(equalTo(Interpreter.UNINITIALIZED)));
+    }
 
     /**
      * Tests {@link Interpreter#visitVarStmt(Stmt.Var)} interprets {@link Stmt.Var} by binding
