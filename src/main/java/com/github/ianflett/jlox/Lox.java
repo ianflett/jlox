@@ -54,7 +54,7 @@ public final class Lox {
     private static void runFile(String path) throws IOException {
 
         var bytes = Files.readAllBytes(Paths.get(path));
-        run(new String(bytes, Charset.defaultCharset()));
+        run(new String(bytes, Charset.defaultCharset()), false);
 
         // Indicate error and exit.
         if (hadError) exit(PosixExits.DATAERR);
@@ -75,11 +75,15 @@ public final class Lox {
                 System.out.print("> ");
                 var line = reader.readLine();
                 if (null == line) break;
+
                 try {
-                    run(line);
+                    run(line, true);
                 } catch (Parser.ParseError ignored) {
                 } catch (RuntimeError error) {
                     System.err.println(error.getMessage());
+                }
+                catch (Exception exception) {
+                    System.err.println(exception.getMessage());
                 }
                 hadError = false;
             }
@@ -91,17 +95,24 @@ public final class Lox {
      *
      * @param source Lox commands to process.
      */
-    private static void run(String source) {
+    private static void run(String source, boolean allowExpression) {
 
         var scanner = new Scanner(source);
         var tokens = scanner.scanTokens();
+        if (1 == tokens.size() && TokenType.EOF == tokens.getLast().type()) return;
+
         var parser = new Parser(tokens);
-        List<Stmt> statements = parser.parse();
 
-        // Stop on syntax error.
-        if (hadError) return;
+        if (allowExpression && TokenType.SEMICOLON != tokens.get(tokens.size() - 2).type()) {
+            System.out.println(interpreter.evaluate(parser.getExpression()));
+        } else {
+            List<Stmt> statements = parser.parse();
 
-        interpreter.interpret(statements);
+            // Stop on syntax error.
+            if (hadError) return;
+
+            interpreter.interpret(statements);
+        }
     }
 
     /**

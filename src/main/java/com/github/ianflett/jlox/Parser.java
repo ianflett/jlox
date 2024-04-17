@@ -43,6 +43,15 @@ public class Parser {
     }
 
     /**
+     * Parses {@link #tokens} into {@link Expr}.
+     *
+     * @return {@link Expr}.
+     */
+    Expr getExpression() {
+        return expression();
+    }
+
+    /**
      * Parses statement grammar rule.
      *
      * <pre>{@link #statement()} -> {@link #printStatement()} | {@link #expressionStatement()}</pre>
